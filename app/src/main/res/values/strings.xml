@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">qSmart</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_standard_monitor">StandardMonitorActivity</string>
+    <string name="title_activity_advanced_monitor">AdvancedMonitorActivity</string>
+
+    <string name="available_devices">Available Devices</string>
+    <string name="no_available_devices">No Available Devices</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="exit_application">Exit Application</string>
+
+    <string name="default_novalue">---</string>
+
+
+
+    <string name="exceptions">" Exceptions"</string>
+    <string name="no_exceptions_found">No Exceptions Found</string>
+    <string name="no_silenced_exceptions">No Silenced Exceptions Found</string>
+    <string name="silence">Silence</string>
+    <string name="exception_name">Exception Name</string>
+    <string name="silenced_exceptions">Silenced Exceptions</string>
+    <string name="exception_detected">Exception Detected</string>
+    <string name="multiple_exceptions_detected">Multiple Exceptions Detected</string>
+
+
+
+
+
+
+    <string-array name="listColors">
+        <item>Blue</item>
+        <item>Green</item>
+        <item>Red</item>
+        <item>Magenta</item>
+        <item>Cyan</item>
+    </string-array>
+
+    <string-array name="listColorValues">
+        <item>#ff0000ff</item>
+        <item>#ff00ff00</item>
+        <item>#ffff0000</item>
+        <item>#ffff00ff</item>
+        <item>#ff00ffff</item>
+    </string-array>
+
+</resources>

@@ -1,0 +1,37 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/crosshatch_bg" >
+
+    <TextView
+        android:id="@+id/available_devices_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="@string/available_devices"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#ffffff" />
+
+    <TextView
+        android:id="@+id/available_devices_none"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/available_devices_title"
+        android:layout_marginTop="30dp"
+        android:gravity="center_horizontal"
+        android:paddingBottom="15dp"
+        android:text="@string/no_available_devices"
+        android:textColor="#ffffff" />
+
+    <ListView
+        android:id="@+id/available_devices_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/available_devices_title" >
+
+    </ListView>
+
+</RelativeLayout>

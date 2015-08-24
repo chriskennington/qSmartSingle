@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/action_bar_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill_horizontal">
+
+                <View
+                    android:id="@+id/main_activity_action_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="55dp"
+                    android:background="#222222"
+                    android:onClick="actionClick"/>
+
+                <ImageView
+                    android:id="@+id/action_bar_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/logo"
+                    android:onClick="actionClick"
+                    android:nestedScrollingEnabled="false"
+                    android:focusableInTouchMode="false"/>
+
+                <TextView
+                    android:id="@+id/action_bar_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/action_bar_info"
+                    android:text=" "
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/White" />
+
+                <ImageButton
+                    android:id="@+id/action_bar_settings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="25dp"
+                    android:background="@drawable/blank"
+                    android:padding="5dp"
+                    android:src="@drawable/menu_settings"
+                    android:onClick="actionClick"/>
+
+                <ImageButton
+                    android:id="@+id/action_bar_scanner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="15dp"
+                    android:layout_toStartOf="@+id/action_bar_settings"
+                    android:background="@drawable/blank"
+                    android:padding="5dp"
+                    android:src="@drawable/menu_scan_result"
+                    android:onClick="actionClick"/>
+
+</RelativeLayout>

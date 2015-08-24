@@ -1,0 +1,43 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory
+        android:title="Alarms and Notifications" >
+
+        <RingtonePreference
+            android:key="notification_sound"
+            android:title="Notification Sound"
+            android:summary="Set the notification sound"
+            android:ringtoneType="notification"
+            android:defaultValue="content://settings/system/notification_sound"/>
+
+        <ListPreference
+            android:key="led_flash_color"
+            android:title="Notification LED Color"
+            android:summary="Set the color of the notification LED"
+            android:dialogTitle="LED Color"
+            android:entries="@array/listColors"
+            android:entryValues="@array/listColorValues"
+            android:defaultValue="#ff0000ff" />
+
+
+        <RingtonePreference
+            android:key="alarm_sound"
+            android:title="Alarm Sound"
+            android:ringtoneType="all"
+            android:summary="Set the alarm sound"
+            android:defaultValue="content://settings/system/alarm_alert"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Security" >
+
+        <EditTextPreference
+            android:key="passcode"
+            android:title="Passcode"
+            android:summary="Enter the same passcode used in your IQ device."
+            android:inputType="number"
+            android:maxLength="4"
+            android:defaultValue = "0000"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
