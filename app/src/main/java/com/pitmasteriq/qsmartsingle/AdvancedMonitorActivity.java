@@ -276,13 +276,13 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
                 food1ProbeName.setText(d.food1Probe().getName());
                 food2ProbeName.setText(d.food2Probe().getName());
                 blowerPower.setText(String.valueOf(d.getBlowerPower()));
-
+                pitSet.setText(String.valueOf(d.config().getPitSet()));
                 pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
 
                 if(d.pitProbe().getTemperature() != 999)
                     pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
                 else
-                    pitTemp.setText(getString(R.string.default_novalue));
+                    pitTemp.setText("ERR");
 
                 if(d.food1Probe().getTemperature() != 999)
                     food1Temp.setText(String.valueOf(d.food1Probe().getTemperature()));

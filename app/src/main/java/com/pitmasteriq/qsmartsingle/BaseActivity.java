@@ -574,6 +574,13 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
                 if( blinkRate > 0 )
                     v.setAnimation(Animations.getBlinkAnimation(blinkRate));
             }
+            else if (d.exceptions().hasSilenced())
+            {
+                if (blinkRate == 0)
+                    blinkRate = 750;
+
+                v.setAnimation(Animations.getPulseAnimation(blinkRate));
+            }
             else
             {
                 v.clearAnimation();
