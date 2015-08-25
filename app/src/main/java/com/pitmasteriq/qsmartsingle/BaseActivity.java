@@ -32,6 +32,9 @@ import com.idevicesinc.sweetblue.utils.Interval;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.UUID;
 
 //TODO UPDATE UI IN STANDARD VIEW!!!!
 
@@ -40,6 +43,7 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         ParameterEditorDialog.ParameterEditorListener,
         InfoFragment.InfoFragmentListener
 {
+    private static final UUID[] WHITELIST = new UUID[]{Uuid.SERVICE, Uuid.CONFIG_BASIC, Uuid.STATUS_BASIC, Uuid.PASSCODE};
 
     public static final String NOTIFICATION_CANCELED = "notification_canceled";
     public static final String NOTIFICATION_ACK = "notification_ack";
@@ -102,7 +106,7 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
                 this.autoScanTime = Interval.millis(500);
                 this.autoScanInterval = Interval.millis(2000);
                 this.autoScanIntervalWhileAppIsPaused = Interval.mins(10);
-                this.defaultScanFilter = new BleManagerConfig.DefaultScanFilter(Uuid.SERVICE);
+                this.defaultScanFilter = new BleManagerConfig.DefaultScanFilter(new HashSet<UUID>(Arrays.asList(WHITELIST)));
         }};
 
         bleManager = BleManager.get(getApplicationContext(), config);
@@ -201,21 +205,27 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
 
         pd = new ProgressDialog(this);
         pd.setIndeterminate(true);
-        pd.setCancelable(false);
+        pd.setCancelable(true);
         pd.setMessage("Attempting to connect to your device. Please wait up to 30 seconds");
         pd.show();
 
+        Log.w("debug", prefs.getString(Preferences.CONNECTED_ADDRESS, "none"));
+        Log.w("debug", prefs.getString(Preferences.RECONNECT_ADDRESS, "none"));
 
         deviceManager.newDevice(address);
 
-        if(prefs.getString(Preferences.CONNECTED_ADDRESS, null) != null)
+
+        String connectedAddress = prefs.getString(Preferences.CONNECTED_ADDRESS, null);
+
+        if (connectedAddress == null || connectedAddress.equals(address))
         {
-            waitingForDisconnect = true;
-            service.disconnectFromDevice();
+            editor.putString(Preferences.CONNECTED_ADDRESS, null).commit();
+            service.connectToDevice(address);
         }
         else
         {
-            service.connectToDevice(address);
+            waitingForDisconnect = true;
+            service.disconnectFromDevice();
         }
     }
 

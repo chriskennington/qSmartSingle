@@ -35,6 +35,8 @@ public class ExceptionManager
     private NotificationManager manager;
     private MediaPlayer mp = null;
 
+    private boolean alarmSounding = false;
+
 
     public static ExceptionManager get(Context context)
     {
@@ -74,6 +76,8 @@ public class ExceptionManager
 
         mp.start();
 
+        alarmSounding = true;
+
         //set the value in preferences to true
         context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, true).commit();
 
@@ -90,13 +94,15 @@ public class ExceptionManager
             mp.stop();
             //set the value in preferences to true
             context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, false).commit();
+
+            alarmSounding = false;
             return true;
         }
 
         return false;
     }
 
-
+    public boolean isAlarmSounding() { return alarmSounding; }
 
     public boolean sendExceptionNotification()
     {

@@ -55,6 +55,16 @@ public class ConnectionTransaction
 
     }
 
+    public void cancel()
+    {
+        try
+        {
+            handler.removeCallbacksAndMessages(timer);
+            device.disconnect();
+        }
+        catch(Exception e){e.printStackTrace();}
+    }
+
     private void writePasscode(final BleDevice device)
     {
         this.device = device;

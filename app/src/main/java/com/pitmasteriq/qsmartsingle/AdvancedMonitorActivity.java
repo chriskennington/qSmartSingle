@@ -20,11 +20,13 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
     //used for detecting swipe
     private float x1,x2, y1, y2;
 
+    private int delayTimeMinutes = 0;
+
     //*** UI COMPONENTS ********************
     ScrollView scrollView;
 
     TextView deviceName, food1ProbeName, food2ProbeName, deviceAddress, pitSet, pitTemp, food1Temp, food2Temp, pitAlarmLow, pitAlarmHigh, food1Alarm, food2Alarm, delayPitSet, delayTime,
-            food1PitSet, atFood1Temp, food2PitSet, atFood2Temp;
+            food1PitSet, atFood1Temp, food2PitSet, atFood2Temp, blowerPower;
 
     ImageView statusIcon;
 
@@ -63,6 +65,7 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
         food2PitSet = (TextView)findViewById(R.id.advanced_food_2_pit_set);
         atFood1Temp = (TextView)findViewById(R.id.advanced_at_food_1_temp);
         atFood2Temp = (TextView)findViewById(R.id.advanced_at_food_2_temp);
+        blowerPower = (TextView)findViewById(R.id.advanced_blower_power);
 
         statusIcon = (ImageView)findViewById(R.id.advanced_status_icon);
 
@@ -108,6 +111,7 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
         food2PitSet.setTypeface(seg7Font);
         atFood1Temp.setTypeface(seg7Font);
         atFood2Temp.setTypeface(seg7Font);
+        blowerPower.setTypeface(seg7Font);
 
 
     }
@@ -236,6 +240,16 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
         return super.onTouchEvent(event);
     }
 
+    private Runnable delayTimeCounter = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            delayTimeMinutes--;
+            handler.postDelayed(this, 60000);
+        }
+    };
+
     private class UpdateUiRunnable implements Runnable
     {
         @Override
@@ -257,14 +271,18 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
                 pitAlarmLow.clearAnimation();
 
 
-
                 deviceName.setText(d.getDefinedName());
                 deviceAddress.setText(d.getAddress());
                 food1ProbeName.setText(d.food1Probe().getName());
                 food2ProbeName.setText(d.food2Probe().getName());
+                blowerPower.setText(String.valueOf(d.getBlowerPower()));
 
-                pitSet.setText(String.valueOf(d.config().getPitSet()));
                 pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+
+                if(d.pitProbe().getTemperature() != 999)
+                    pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+                else
+                    pitTemp.setText(getString(R.string.default_novalue));
 
                 if(d.food1Probe().getTemperature() != 999)
                     food1Temp.setText(String.valueOf(d.food1Probe().getTemperature()));

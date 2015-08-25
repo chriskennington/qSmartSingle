@@ -127,7 +127,10 @@ public class DeviceExceptions
 
     public boolean addException(Exception e)
     {
-        return exceptions.add(e);
+        if(!silenced().contains(e))
+            return exceptions.add(e);
+        else
+            return false;
     }
 
     public boolean addException(int i)
@@ -136,7 +139,10 @@ public class DeviceExceptions
         {
             if(e.number == i)
             {
-                return addException(e);
+                if(!silenced().contains(e))
+                    return addException(e);
+                else
+                    return false;
             }
         }
 

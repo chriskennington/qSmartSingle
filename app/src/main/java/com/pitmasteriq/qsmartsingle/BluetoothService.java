@@ -51,6 +51,8 @@ public class BluetoothService extends Service
 
     private UpdateThread updateThread;
 
+    private ConnectionTransaction connectionTransaction;
+
 
     private boolean isScanning = false;
     private int scanTime = 500;
@@ -236,6 +238,10 @@ public class BluetoothService extends Service
                         this.reconnectPersistFilter_longTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
                         this.reconnectPersistFilter_shortTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
                     }});
+
+
+
+                Log.w(TAG, "Starting connection");
                 d.connect(new ConnectionListener(), new ConnectionFailListener());
                 return;
             }
@@ -269,6 +275,11 @@ public class BluetoothService extends Service
             listener.disconnectFailed();
     }
 
+    public void cancelConnectionAttempt()
+    {
+        connectionTransaction.cancel();
+    }
+
     public BleManager.DiscoveryListener discoveryListener = new BleManager.DiscoveryListener()
     {
         @Override
@@ -276,7 +287,10 @@ public class BluetoothService extends Service
         {
 
             if (e.lifeCycle() == LifeCycle.DISCOVERED)
+            {
                 ScannedDevices.get().addressDiscovered(e.device().getMacAddress());
+                Log.e("Discovered", e.device().getMacAddress() + ":" + e.device().getName_native());
+            }
 
             if (e.lifeCycle() == LifeCycle.REDISCOVERED)
                 ScannedDevices.get().addressRediscovered(e.device().getMacAddress());
@@ -351,33 +365,40 @@ public class BluetoothService extends Service
         {
             if(deviceManager.device() != null)
             {
-                if(!powerManager.isScreenOn())
+                if (deviceManager.device().exceptions().hasAlarm())
                 {
-                    if (deviceManager.device().exceptions().hasAlarm())
-                    {
-                        exceptionManager.startAlarm();
-                    }
+                    exceptionManager.startAlarm();
+                    exceptionManager.sendExceptionNotification();
+                }
+                else if (deviceManager.device().exceptions().hasNotify())
+                {
+                    exceptionManager.sendExceptionNotification();
                 }
                 else
                 {
-                    if (deviceManager.device().exceptions().hasAlarm() || deviceManager.device().exceptions().hasNotify())
-                    {
-                        exceptionManager.sendExceptionNotification();
-                    }
+                    if(exceptionManager.isAlarmSounding())
+                        exceptionManager.stopAlarm();
+
+                    exceptionManager.cancelNotification(ExceptionManager.ALARM);
                 }
             }
 
+
+
             //check for disconnect error
-            if(prefs.getString(Preferences.RECONNECT_ADDRESS, null) != null)
+            if(prefs != null)
             {
-                long lostTime = prefs.getLong(Preferences.CONNECTION_LOST_TIME, -1);
+                if (prefs.getString(Preferences.RECONNECT_ADDRESS, null) != null)
+                {
+                    long lostTime = prefs.getLong(Preferences.CONNECTION_LOST_TIME, -1);
 
-                if(lostTime == -1)
-                    return;
+                    if (lostTime == -1)
+                        return;
 
-                if(System.currentTimeMillis() - lostTime > (10000))
-                    if(deviceManager.device() != null)
-                        deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
+                    if (System.currentTimeMillis() - lostTime > (10000))
+                        if (deviceManager.device() != null)
+                            deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
+                }
             }
         }
     }
@@ -415,9 +436,9 @@ public class BluetoothService extends Service
 
     private void startTransaction(BleDevice d)
     {
-        ConnectionTransaction pt = new ConnectionTransaction(getApplicationContext());
-        pt.setConnectionListener(connectionResponseListener);
-        pt.start(d);
+        connectionTransaction = new ConnectionTransaction(getApplicationContext());
+        connectionTransaction.setConnectionListener(connectionResponseListener);
+        connectionTransaction.start(d);
     }
 
 
@@ -434,15 +455,18 @@ public class BluetoothService extends Service
         @Override
         public void onPasscodeAccepted(BleDevice device)
         {
-            //remove connection lost flag from device
-            deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.CONNECTION_LOST);
-
             //set internal preferences to reflect connection status
             editor.putString(Preferences.CONNECTED_ADDRESS, device.getMacAddress())
                     .putString(Preferences.RECONNECT_ADDRESS, null).commit();
 
-            //update device status
-            deviceManager.device().setStatus(Device.Status.OK);
+            if( deviceManager.device() != null)
+            {
+                //remove connection lost flag from device
+                deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.CONNECTION_LOST);
+
+                //update device status
+                deviceManager.device().setStatus(Device.Status.OK);
+            }
 
             //notify the activity that we connected
             listener.newDeviceAdded(device.getMacAddress());
@@ -635,16 +659,17 @@ public class BluetoothService extends Service
 
 
 
+                if(deviceManager.device() != null)
+                {
+                    //TODO If flag bits have changed, do something
+                    if (deviceManager.device().exceptions().compareHash(flagHash) == false)
+                        handleFlagBits(bits);
 
-                //TODO If flag bits have changed, do something
-                if(deviceManager.device().exceptions().compareHash(flagHash) == false)
-                    handleFlagBits(bits);
-
-                if(values.get(3) == 999)
-                    deviceManager.device().exceptions().addException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
-                else
-                    deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
-
+                    if (values.get(3) == 999)
+                        deviceManager.device().exceptions().addException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
+                    else
+                        deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
+                }
 
                 //UPDATE DEVICE VALUES
                 deviceManager.updateValues(values);

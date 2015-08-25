@@ -43,15 +43,20 @@ public class MainActivity extends Activity
         try
         {
             PackageInfo packageInfo = getPackageManager().getPackageInfo(this.getPackageName(), 0);
-            int versionCode = packageInfo.versionCode;;
+            int versionCode = packageInfo.versionCode;
+
 
             int currentVersion = prefs.getInt(Preferences.VERSION_CODE, -1);
-            if( currentVersion == -1 || currentVersion != versionCode )
+            if (currentVersion == -1)
             {
-                editor.putBoolean(Preferences.NEW_VERSION, true);
-                editor.putInt(Preferences.VERSION_CODE, versionCode);
-                editor.apply();
+                editor.putBoolean(Preferences.NEW_VERSION, false).apply();
             }
+            else if (currentVersion != versionCode )
+            {
+                editor.putBoolean(Preferences.NEW_VERSION, true).apply();
+            }
+
+            editor.putInt(Preferences.VERSION_CODE, versionCode).apply();
 
         } catch(PackageManager.NameNotFoundException e){e.printStackTrace();}
 

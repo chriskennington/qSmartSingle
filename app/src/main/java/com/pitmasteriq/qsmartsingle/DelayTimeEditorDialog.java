@@ -66,7 +66,8 @@ public class DelayTimeEditorDialog extends DialogFragment
 
         title.setText(getArguments().getString("title"));
 
-        time.setHint(calculateTime(current));
+        time.setText(calculateTime(current));
+        newTime = current;
 
 
         cancel.setOnClickListener(new View.OnClickListener()

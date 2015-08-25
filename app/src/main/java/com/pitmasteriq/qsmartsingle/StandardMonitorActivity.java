@@ -217,6 +217,9 @@ public class StandardMonitorActivity extends BaseActivity
 
             Toast.makeText(this, "new version", Toast.LENGTH_LONG).show();
 
+            MessageDialog md = MessageDialog.newInstance("Update", getString(R.string.version_0_1_1_notes));
+            md.show(getFragmentManager(), "dialog");
+
             return true;
         }
 
@@ -256,12 +259,15 @@ public class StandardMonitorActivity extends BaseActivity
                 deviceName.setText(d.getDefinedName());
                 food1Name.setText(d.food1Probe().getName());
                 food2Name.setText(d.food2Probe().getName());
-                pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+
                 pitSet.setText(String.valueOf(d.config().getPitSet()));
 
 
 
-
+                if(d.pitProbe().getTemperature() != 999)
+                    pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+                else
+                    pitTemp.setText(getString(R.string.default_novalue));
 
                 if(d.food1Probe().getTemperature() != 999)
                     food1Temp.setText(String.valueOf(d.food1Probe().getTemperature()));
