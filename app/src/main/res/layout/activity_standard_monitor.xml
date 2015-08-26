@@ -27,7 +27,7 @@
             android:layout_alignParentStart="true"
             android:layout_marginStart="25dp"
             android:textSize="30sp"
-            android:onClick="parameterChange"/>
+            android:nestedScrollingEnabled="false"/>
 
         <ImageView
             android:layout_width="wrap_content"
@@ -61,7 +61,7 @@
         android:layout_marginBottom="2.5dp"
         android:background="@drawable/monitor_main_row_background"
         android:id="@+id/standard_pit_set_click_loc"
-        android:onClick="parameterChange">
+        >
 
         <TextView
             android:layout_width="wrap_content"
@@ -127,7 +127,7 @@
         android:layout_marginBottom="2.5dp"
         android:background="@drawable/monitor_main_row_background"
         android:id="@+id/standard_food_1_click_loc"
-        android:onClick="parameterChange">
+        >
 
         <TextView
             android:layout_width="wrap_content"
@@ -161,7 +161,7 @@
         android:layout_marginBottom="5dp"
         android:background="@drawable/monitor_main_row_background"
         android:id="@+id/standard_food_2_click_loc"
-        android:onClick="parameterChange">
+        >
 
         <TextView
             android:layout_width="wrap_content"

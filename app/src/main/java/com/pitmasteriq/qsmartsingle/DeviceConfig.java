@@ -23,6 +23,10 @@ public class DeviceConfig
     public static final int CONFIG_FOOD_2_TEMP = 14;
     public static final int CONFIG_FOOD_2_PIT_SET = 15;
 
+    public static final int CONFIG_DEVICE_NAME = 100;
+    public static final int CONFIG_FOOD1_NAME = 101;
+    public static final int CONFIG_FOOD2_NAME = 102;
+
     private int pitSet = 0;
     private int food1AlarmTemp = 0;
     private int food2AlarmTemp = 0;
@@ -36,6 +40,7 @@ public class DeviceConfig
     private int food1PitSet = 0;
     private int food2Temp = 0;
     private int food2PitSet = 0;
+    private int minutesPast = 0;
 
 
     public String getHash() {return hash;}
@@ -79,4 +84,7 @@ public class DeviceConfig
 
     public int getFood2PitSet() {return food2PitSet;}
     public void setFood2PitSet(int food2PitSet) {this.food2PitSet = food2PitSet;}
+
+    public int getMinutesPast() { return minutesPast; }
+    public void setMinutesPast(int minutesPast) { this.minutesPast = minutesPast; }
 }

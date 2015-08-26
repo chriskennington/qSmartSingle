@@ -36,12 +36,6 @@ public class Device
 
     private int blowerPower = 0;
 
-
-
-
-
-
-
     public Device(String macAddress)
     {
         this.setAddress(macAddress);

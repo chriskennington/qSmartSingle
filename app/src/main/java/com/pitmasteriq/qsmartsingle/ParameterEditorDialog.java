@@ -46,7 +46,7 @@ public class ParameterEditorDialog extends DialogFragment
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 
-        TextView titleView = (TextView)v.findViewById(R.id.delay_time_editor_title);
+        TextView titleView = (TextView)v.findViewById(R.id.text_editor_title);
         final EditText value = (EditText)v.findViewById(R.id.parameter_editor_input);
         Button cancel = (Button)v.findViewById(R.id.parameter_editor_cancel);
         Button ok = (Button)v.findViewById(R.id.parameter_editor_ok);

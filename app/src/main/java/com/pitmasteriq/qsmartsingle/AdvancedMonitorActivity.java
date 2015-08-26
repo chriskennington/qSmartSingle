@@ -12,6 +12,8 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Formatter;
+
 
 public class AdvancedMonitorActivity extends BaseActivity implements View.OnClickListener, View.OnTouchListener
 {
@@ -160,13 +162,13 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
             switch (v.getId())
             {
                 case R.id.advanced_device_name:
-                    //openParameterDialog("Change Pit Set Temperature", deviceManager.device().getDefinedName(), Device.DEVICE_NAME);
+                    openParameterDialog("Change Device Name", 0, TextEditorDialog.DEVICE_NAME);
                     break;
-                case R.id.standard_food_1_name:
-                    //openParameterDialog("Change Pit Set Temperature", deviceManager.device().food2Probe().getName(), Device.FOOD_1_PROBE_NAME);
+                case R.id.advanced_food_1_probe_name:
+                    openParameterDialog("Change Food Probe 1 Name", 0, TextEditorDialog.FOOD1_NAME);
                     break;
-                case R.id.standard_food_2_name:
-                    //openParameterDialog("Change Pit Set Temperature", deviceManager.device().food1Probe().getName(), Device.FOOD_2_PROBE_NAME);
+                case R.id.advanced_food_2_probe_name:
+                    openParameterDialog("Change Food Probe 2 Name", 0, TextEditorDialog.FOOD2_NAME);
                     break;
                 case R.id.advanced_status_icon:
                     openExceptionFragment();
@@ -343,22 +345,20 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
                     delayPitSet.setText(String.valueOf(d.config().getDelayPitSet()));
 
                     int minutes = d.config().getDelayTime() * 15;
+                    minutes -= d.config().getMinutesPast();
                     int hours = minutes / 60;
                     minutes = (minutes - hours * 60) ;
-                    String m = "00";
-                    String h = "00";
 
-                    if(minutes == 0)
-                        m = "00";
-                    else
-                        m = String.valueOf(minutes);
+                    if(minutes < 0)
+                        minutes = 0;
 
-                    if(hours == 0)
-                        h = "00";
-                    else if (hours < 10)
-                        h = "0" + hours;
-                    else
-                        h = String.valueOf(hours);
+                    Formatter formatter = new Formatter();
+                    String h = formatter.format("%02d", hours).toString();
+                    formatter.close();
+
+                    formatter = new Formatter();
+                    String m = formatter.format("%02d", minutes).toString();
+                    formatter.close();
 
                     delayTime.setText(h + ":" + m);
                 }
@@ -382,7 +382,7 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
                                 break;
                             case FOOD_1_PROBE_ERROR:
                                 food1Temp.setText("ERR");
-                                food2Temp.setAnimation(Animations.getBlinkAnimation());
+                                food1Temp.setAnimation(Animations.getBlinkAnimation());
                                 blinkRate = 250;
                                 break;
                             case FOOD_2_PROBE_ERROR:

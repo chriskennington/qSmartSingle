@@ -337,6 +337,13 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         if (selector == DeviceConfig.CONFIG_DELAY_TIME)
             edit = new DelayTimeEditorDialog();
 
+        if (selector == TextEditorDialog.FOOD1_NAME ||
+                selector == TextEditorDialog.FOOD2_NAME ||
+                selector == TextEditorDialog.DEVICE_NAME)
+        {
+            edit = new TextEditorDialog();
+        }
+
         Bundle args = new Bundle();
         args.putString("title", title);
         args.putInt("current", current);

@@ -165,11 +165,12 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Food 1 Temp"
+                        android:text="Food 1"
                         android:id="@+id/advanced_food_1_probe_name"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="10dp"
-                        android:textColor="@color/White"/>
+                        android:textColor="@color/White"
+                        />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -210,11 +211,12 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Food 2 Temp"
+                        android:text="Food 2"
                         android:id="@+id/advanced_food_2_probe_name"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="10dp"
-                        android:textColor="@color/White"/>
+                        android:textColor="@color/White"
+                        />
 
                     <TextView
                         android:layout_width="wrap_content"

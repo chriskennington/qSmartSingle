@@ -643,6 +643,8 @@ public class BluetoothService extends Service
                 value = bytesToShort((byte) 0, data[19]);
                 values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
 
+                values.add(getHighBits((short)data[9]));
+
                 //convert two byte flag bit fields into short
 
                 short flagBits = bytesToShort(data[14], data[15]);
@@ -682,10 +684,6 @@ public class BluetoothService extends Service
             }
         }
 
-        //TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         private void handleFlagBits(boolean[] bits)
         {
             String flags = "";
@@ -706,6 +704,12 @@ public class BluetoothService extends Service
             }
 
             Log.e(TAG, flags);
+        }
+
+        private short getHighBits(short value)
+        {
+            int high = (value & 0XF0) >> 4;
+            return (short) high;
         }
 
         private short bytesToShort(byte i, byte j)

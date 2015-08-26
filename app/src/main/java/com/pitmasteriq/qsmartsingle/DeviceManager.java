@@ -168,6 +168,9 @@ public class DeviceManager
         device.config().setFood1PitSet(values.get(11));
         device.config().setFood2Temp(values.get(12));
         device.config().setFood2PitSet(values.get(13));
+
+        //TODO add minutes past somehow??
+        device.config().setMinutesPast(values.get(14));
     }
 
 }

@@ -4,16 +4,18 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.idevicesinc.sweetblue.BleDevice;
 
 
-public class StandardMonitorActivity extends BaseActivity
+public class StandardMonitorActivity extends BaseActivity implements View.OnClickListener
 {
 
     //used for detecting swipe
@@ -22,6 +24,7 @@ public class StandardMonitorActivity extends BaseActivity
     //*** UI COMPONENTS ***
     private TextView deviceName, food1Name, food2Name, pitSet, pitTemp, food1Temp, food2Temp, debug;
     private ImageView statusIcon;
+    private RelativeLayout pitSetClickLoc, food1ClickLoc, food2ClickLoc;
     //*********************
 
     @Override
@@ -44,8 +47,16 @@ public class StandardMonitorActivity extends BaseActivity
         debug = (TextView)findViewById(R.id.standard_debug);
         statusIcon = (ImageView)findViewById(R.id.standard_status_icon);
 
+        food1ClickLoc = (RelativeLayout)findViewById(R.id.standard_food_1_click_loc);
+        food2ClickLoc = (RelativeLayout)findViewById(R.id.standard_food_2_click_loc);
+        pitSetClickLoc = (RelativeLayout)findViewById(R.id.standard_pit_set_click_loc);
 
-        statusIcon.setOnClickListener(statusIconClick);
+
+        deviceName.setOnClickListener(this);
+        pitSetClickLoc.setOnClickListener(this);
+        food1ClickLoc.setOnClickListener(this);
+        food2ClickLoc.setOnClickListener(this);
+        statusIcon.setOnClickListener(this);
 
         pitSet.setTypeface(seg7Font);
         pitTemp.setTypeface(seg7Font);
@@ -110,6 +121,31 @@ public class StandardMonitorActivity extends BaseActivity
         return super.onTouchEvent(event);
     }
 
+    @Override
+    public void onClick(View v)
+    {
+        Log.i("adv", "view clicked");
+
+        if (deviceManager.device() != null)
+        {
+            switch (v.getId())
+            {
+                case R.id.standard_device_name:
+                    openParameterDialog("Change Device Name", 0, TextEditorDialog.DEVICE_NAME);
+                    break;
+                case R.id.standard_pit_set_click_loc:
+                    openParameterDialog("Change Pit Set Temperature", deviceManager.device().config().getPitSet(), DeviceConfig.CONFIG_PIT_SET);
+                    break;
+                case R.id.standard_food_1_click_loc:
+                    openParameterDialog("Change Food Probe 1 Name", 0, TextEditorDialog.FOOD1_NAME);
+                    break;
+                case R.id.standard_food_2_click_loc:
+                    openParameterDialog("Change Food Probe 2 Name", 0, TextEditorDialog.FOOD2_NAME);
+                    break;
+            }
+        }
+    }
+
 
     /*
     @Override
@@ -155,14 +191,19 @@ public class StandardMonitorActivity extends BaseActivity
             switch (v.getId())
             {
                 case R.id.standard_device_name:
+                    openParameterDialog("Change Device Name", 0, TextEditorDialog.DEVICE_NAME);
                     break;
                 case R.id.standard_pit_set_click_loc:
                     openParameterDialog("Change Pit Set Temperature", deviceManager.device().config().getPitSet(), DeviceConfig.CONFIG_PIT_SET);
                     break;
                 case R.id.standard_food_1_click_loc:
+                    openParameterDialog("Change Food Probe 1 Name", 0, TextEditorDialog.FOOD1_NAME);
                     break;
                 case R.id.standard_food_2_click_loc:
+                    openParameterDialog("Change Food Probe 2 Name", 0, TextEditorDialog.FOOD2_NAME);
                     break;
+                case R.id.standard_status_icon:
+                    openExceptionFragment();
             }
         }
     }
@@ -225,15 +266,6 @@ public class StandardMonitorActivity extends BaseActivity
 
         return false;
     }
-
-    private View.OnClickListener statusIconClick = new View.OnClickListener()
-    {
-        @Override
-        public void onClick(View v)
-        {
-            openExceptionFragment();
-        }
-    };
 
     private class UpdateUiRunnable implements Runnable
     {

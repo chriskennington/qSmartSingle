@@ -136,7 +136,7 @@ public class ExceptionManager
         Intent resultIntent = new Intent(context, StandardMonitorActivity.class);
         resultIntent.setAction(BaseActivity.NOTIFICATION_ACK);
         PendingIntent rpi = PendingIntent.getActivity(context, 1, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.setContentIntent(rpi);
+        //builder.setContentIntent(rpi);
 
         manager.notify(ALARM, builder.build());
 
