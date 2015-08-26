@@ -3,7 +3,7 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="com.pitmasteriq.qsmartsingle.StandardMonitorActivity"
+                tools:context="com.pitmasteriq.qsmart.StandardMonitorActivity"
                 android:weightSum="1"
                 android:background="@drawable/monitor_background">
 

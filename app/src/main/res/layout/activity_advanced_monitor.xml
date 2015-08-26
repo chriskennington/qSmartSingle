@@ -2,7 +2,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="com.pitmasteriq.qsmartsingle.AdvancedMonitorActivity"
+                tools:context="com.pitmasteriq.qsmart.AdvancedMonitorActivity"
                 android:background="@drawable/monitor_background">
 
     <ScrollView
