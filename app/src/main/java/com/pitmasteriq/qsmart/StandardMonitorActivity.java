@@ -142,6 +142,8 @@ public class StandardMonitorActivity extends BaseActivity implements View.OnClic
                 case R.id.standard_food_2_click_loc:
                     openParameterDialog("Change Food Probe 2 Name", 0, TextEditorDialog.FOOD2_NAME);
                     break;
+                case R.id.standard_status_icon:
+                    openExceptionFragment();
             }
         }
     }
