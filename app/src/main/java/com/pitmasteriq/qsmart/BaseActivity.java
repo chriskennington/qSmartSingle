@@ -209,11 +209,7 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         pd.setMessage("Attempting to connect to your device. Please wait up to 30 seconds");
         pd.show();
 
-        Log.w("debug", prefs.getString(Preferences.CONNECTED_ADDRESS, "none"));
-        Log.w("debug", prefs.getString(Preferences.RECONNECT_ADDRESS, "none"));
-
         deviceManager.newDevice(address);
-
 
         String connectedAddress = prefs.getString(Preferences.CONNECTED_ADDRESS, null);
 

@@ -1,0 +1,4 @@
+0.1.6
+[FIXED] null pointer expection in onPasscodeTimeout()
+[FIXED] Scanning could pick up and display non IQ130 devices
+[REMOVED] Unused class MyDiscoveryListener

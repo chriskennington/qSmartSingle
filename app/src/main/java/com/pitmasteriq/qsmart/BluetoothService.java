@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class BluetoothService extends Service
 {
@@ -58,6 +59,8 @@ public class BluetoothService extends Service
     private int scanTime = 500;
     private int scanInterval = 2000;
     private boolean updateScanTime = false;
+
+    private boolean connectionAttemptActive = false;
 
 
     private Handler handler = new Handler();
@@ -226,28 +229,38 @@ public class BluetoothService extends Service
 
     public void connectToDevice(String address)
     {
-        for(BleDevice d : bleManager.getDevices_List())
-        {
-            if(d.getMacAddress().equals(address))
+        //if (!connectionAttemptActive)
+        //{
+            connectionAttemptActive = true;
+
+
+
+            for (BleDevice d : bleManager.getDevices_List())
             {
-                d.setConfig(new BleDeviceConfig()
-                {{
-                        //TODO Uncomment to turn off auto reconnect feature
-                        this.reconnectRequestFilter_longTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
-                        this.reconnectRequestFilter_shortTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
-                        this.reconnectPersistFilter_longTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
-                        this.reconnectPersistFilter_shortTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
-                    }});
+                if (d.getMacAddress().equals(address))
+                {
+                    d.setConfig(new BleDeviceConfig()
+                    {{
+                            //TODO Uncomment to turn off auto reconnect feature
+                            this.reconnectRequestFilter_longTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
+                            this.reconnectRequestFilter_shortTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
+                            this.reconnectPersistFilter_longTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
+                            this.reconnectPersistFilter_shortTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
+                        }});
 
 
-
-                Log.w(TAG, "Starting connection");
-                d.connect(new ConnectionListener(), new ConnectionFailListener());
-                return;
+                    Log.w(TAG, "Starting connection");
+                    d.connect(new ConnectionListener(), new ConnectionFailListener());
+                    return;
+                }
             }
-        }
-
-        listener.newDeviceFailed(address);
+            connectionAttemptActive = false;
+            listener.newDeviceFailed(address);
+        //}
+        //else
+        //{
+        //    Toast.makeText(this,"Connection attempt already started. Please Wait...",Toast.LENGTH_SHORT).show();
+        //}
     }
 
 
@@ -285,6 +298,16 @@ public class BluetoothService extends Service
         @Override
         public void onEvent(DiscoveryEvent e)
         {
+            boolean serviceFound = false;
+            for (UUID uuid : e.device().getAdvertisedServices())
+            {
+                if(uuid.equals(Uuid.SERVICE))
+                    serviceFound = true;
+            }
+
+            if(!serviceFound)
+                return;
+
 
             if (e.lifeCycle() == LifeCycle.DISCOVERED)
             {
@@ -455,6 +478,8 @@ public class BluetoothService extends Service
         @Override
         public void onPasscodeAccepted(BleDevice device)
         {
+            connectionAttemptActive = false;
+
             //set internal preferences to reflect connection status
             editor.putString(Preferences.CONNECTED_ADDRESS, device.getMacAddress())
                     .putString(Preferences.RECONNECT_ADDRESS, null).commit();
@@ -475,6 +500,8 @@ public class BluetoothService extends Service
         @Override
         public void onPasscodeFailed(BleDevice device)
         {
+            connectionAttemptActive = false;
+
             if(prefs.getString(Preferences.RECONNECT_ADDRESS, null) == null)
             {
                 //passcode failed on initial connection
@@ -493,6 +520,8 @@ public class BluetoothService extends Service
         @Override
         public void onPasscodeTimeout(BleDevice device)
         {
+            connectionAttemptActive = false;
+
             if(prefs.getString(Preferences.RECONNECT_ADDRESS, null) == null)
             {
                 //passcode timed out on initial connection
@@ -501,9 +530,17 @@ public class BluetoothService extends Service
             }
             else
             {
-                //passcode timed out on a reconnect attempt
-                editor.putString(Preferences.RECONNECT_ADDRESS, null).commit();
-                deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
+                try
+                {
+                    //passcode timed out on a reconnect attempt
+                    editor.putString(Preferences.RECONNECT_ADDRESS, null).commit();
+                    deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
+                }
+                catch(NullPointerException e)
+                {
+                    //Something bad happened
+                    deviceManager.clear();
+                }
             }
         }
     };
@@ -547,6 +584,8 @@ public class BluetoothService extends Service
 
             if(e.didEnter(BleDeviceState.DISCONNECTED))
             {
+                connectionAttemptActive = false;
+
                 e.device().unbond();
 
                 editor.putString(Preferences.CONNECTED_ADDRESS, null).commit();
@@ -581,7 +620,7 @@ public class BluetoothService extends Service
         @Override
         public Please onEvent(ConnectionFailEvent event)
         {
-
+            connectionAttemptActive = false;
             listener.connectionFailed(event.status().toString());
             editor.putString(Preferences.CONNECTED_ADDRESS, null).commit();
             deviceManager.clear();
