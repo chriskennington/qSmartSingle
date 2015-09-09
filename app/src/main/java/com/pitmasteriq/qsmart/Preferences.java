@@ -22,6 +22,7 @@ public class Preferences
     public static final String CONNECTION_LOST_TIME = "connection_lost_time";
 
     public static final String ALARM_SOUNDING = "alarm_sounding";
+    public static final String ALARM_NEXT_TIME = "alarm_next_time";
     public static final String NOTIFY_SOUNDING = "notify_sounding";
     public static final String NOTIFY_NEXT_TIME = "notify_next_time";
 

@@ -264,7 +264,13 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         args.putString("address", currentAddress);
         scan.setArguments(args);
 
-        scan.show(ft, "dialog");
+
+        try
+        {
+            scan.show(ft, "dialog");
+        }
+        catch(IllegalStateException e){e.printStackTrace();}
+
     }
 
 

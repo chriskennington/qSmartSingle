@@ -26,7 +26,6 @@ import java.util.UUID;
 
 public class BluetoothService extends Service
 {
-
     private static final int UPDATE_INTERVAL = 2000;
     private static final int TEMPERATURE_OFFSET = 145;
     private static final int NUMBER_OF_ALARM_BITS = 11;
@@ -402,7 +401,8 @@ public class BluetoothService extends Service
                     if(exceptionManager.isAlarmSounding())
                         exceptionManager.stopAlarm();
 
-                    exceptionManager.cancelNotification(ExceptionManager.ALARM);
+                    if(exceptionManager.isNotificationActive())
+                        exceptionManager.cancelNotification(ExceptionManager.ALARM);
                 }
             }
 

@@ -1,3 +1,9 @@
+0.1.7
+[ADDED] Clicking on notification will open app to Standard View
+[ADDED] One minute delay between when an alarm shuts off and the next time it can sound
+[FIXED] IllegalStateExpection at openScanFragment in BaseActivity is now caught
+[FIXED] Issue with notifications
+
 0.1.6
 [FIXED] null pointer expection in onPasscodeTimeout()
 [FIXED] Scanning could pick up and display non IQ130 devices

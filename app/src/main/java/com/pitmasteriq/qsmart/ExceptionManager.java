@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,6 +14,7 @@ import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 /**
  * Created by Chris on 7/31/2015.
@@ -36,6 +38,7 @@ public class ExceptionManager
     private MediaPlayer mp = null;
 
     private boolean alarmSounding = false;
+    private boolean notificationActive = false;
 
 
     public static ExceptionManager get(Context context)
@@ -93,7 +96,8 @@ public class ExceptionManager
         {
             mp.stop();
             //set the value in preferences to true
-            context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, false).commit();
+            context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, false)
+                    .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + BaseActivity.NOTIFICATION_WAIT_TIME).commit();
 
             alarmSounding = false;
             return true;
@@ -103,14 +107,21 @@ public class ExceptionManager
     }
 
     public boolean isAlarmSounding() { return alarmSounding; }
+    public boolean isNotificationActive() { return notificationActive; }
 
     public boolean sendExceptionNotification()
     {
         if(manager == null)
+        {
+            Log.d("Exception Manager", "notification canceled --- manager null");
             return false;
+        }
 
         if(!canSendNotify())
+        {
+            Log.d("Exception Manager", "notification canceled --- cant send notify");
             return false;
+        }
 
         Uri sound = Uri.parse( prefs.getString(Preferences.NOTIFICATION_SOUND,
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).toString()) );
@@ -134,12 +145,21 @@ public class ExceptionManager
         builder.setDeleteIntent(cpi);
 
         Intent resultIntent = new Intent(context, StandardMonitorActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        // Adds the back stack
+        stackBuilder.addParentStack(StandardMonitorActivity.class);
+        // Adds the Intent to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        // Gets a PendingIntent containing the entire back stack
         resultIntent.setAction(BaseActivity.NOTIFICATION_ACK);
-        PendingIntent rpi = PendingIntent.getActivity(context, 1, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        //builder.setContentIntent(rpi);
+        PendingIntent rpi = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
+
+        //PendingIntent rpi = PendingIntent.getActivity(context, 1, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.setContentIntent(rpi);
 
         manager.notify(ALARM, builder.build());
 
+        notificationActive = true;
 
         //set the value in preferences to true
         context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.NOTIFY_SOUNDING, true).commit();
@@ -167,7 +187,10 @@ public class ExceptionManager
         if(manager == null)
             return false;
 
-        if(context.getSharedPreferences(Preferences.PREFERENCES, 0).getBoolean(Preferences.ALARM_SOUNDING, false))
+        SharedPreferences p = context.getSharedPreferences(Preferences.PREFERENCES, 0);
+
+        if(p.getBoolean(Preferences.ALARM_SOUNDING, false) ||
+                System.currentTimeMillis() < p.getLong(Preferences.ALARM_NEXT_TIME, 0))
             return false;
         else
             return true;
@@ -179,6 +202,11 @@ public class ExceptionManager
             return false;
 
         manager.cancel(id);
+
+        notificationActive = false;
+
+
+        Log.d("Exception Manager", "SETTING NEW NOTIFICATION TIME!!!");
 
         //set the value in preferences to true
         context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.NOTIFY_SOUNDING, false)
