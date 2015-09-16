@@ -1,3 +1,7 @@
+0.1.8
+[ADDED] service startForeground and stopForeground
+[CHANGED] Address timeout from 5 seconds to 60 seconds
+
 0.1.7
 [ADDED] Clicking on notification will open app to Standard View
 [ADDED] One minute delay between when an alarm shuts off and the next time it can sound
