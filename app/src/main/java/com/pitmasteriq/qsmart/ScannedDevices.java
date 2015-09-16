@@ -91,7 +91,7 @@ public class ScannedDevices
 
     private class Address
     {
-        private static final long TIMEOUT = 5000;
+        private static final long TIMEOUT = 60000;
 
         private String address;
         private long time;

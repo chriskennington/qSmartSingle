@@ -381,7 +381,7 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
     {
 
         @Override
-        public void connectionFailed(String msg)
+        public void connectionFailed(String msg, String address)
         {
             //hide adding iq progress dialog
             if(pd!=null)
@@ -391,6 +391,8 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
                 //show device added message
                 MessageDialog md = MessageDialog.newInstance("Error", "Connection Failed: " + msg);
                 md.show(getFragmentManager(), "dialog");
+
+                ScannedDevices.get().addressUndiscovered(address);
             }
             catch(IllegalStateException e){e.printStackTrace();}
 

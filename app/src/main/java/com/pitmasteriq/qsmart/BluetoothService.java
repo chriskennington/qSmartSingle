@@ -95,8 +95,6 @@ public class BluetoothService extends Service
 
         prefs = getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
         editor = prefs.edit();
-
-
     }
 
     @Override
@@ -109,6 +107,8 @@ public class BluetoothService extends Service
 
         Log.i(TAG, "service started");
 
+        startForeground(1,Notifications.getServiceNotification(getApplicationContext()));
+
         return Service.START_STICKY;
     }
 
@@ -117,12 +117,16 @@ public class BluetoothService extends Service
     {
         super.onDestroy();
 
+        stopForeground(true);
+
         updateThread.setRunning(false);
 
         stopScanning();
 
         Log.i(TAG, "service stopped");
     }
+
+
 
     @Override
     public IBinder onBind(Intent intent)
@@ -435,7 +439,7 @@ public class BluetoothService extends Service
         void onServiceReady();
         void onServiceStopped();
 
-        void connectionFailed(String msg);
+        void connectionFailed(String msg, String address);
 
         void newDeviceAdded(String address);
         void newDeviceFailed(String address);
@@ -621,7 +625,7 @@ public class BluetoothService extends Service
         public Please onEvent(ConnectionFailEvent event)
         {
             connectionAttemptActive = false;
-            listener.connectionFailed(event.status().toString());
+            listener.connectionFailed(event.status().toString(), event.device().getMacAddress());
             editor.putString(Preferences.CONNECTED_ADDRESS, null).commit();
             deviceManager.clear();
 
