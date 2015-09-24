@@ -1,3 +1,9 @@
+0.1.9
+[CHANGED] Moved the connection time out code to the base activity class
+{CHANGED] Lowered minimum swipe distance in an attempt to make swiping easier
+[ADDED] connection failed toast
+[REMOVED] pop up message on connection failed
+[CHANGED] Device name label to device.default.large
 
 0.1.8
 [ADDED] service startForeground and stopForeground

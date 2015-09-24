@@ -441,7 +441,7 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
             }
             else
             {
-                deviceName.setText(getString(R.string.default_novalue));
+                deviceName.setText("Device Name");
                 food1ProbeName.setText(getString(R.string.default_novalue));
                 food2ProbeName.setText(getString(R.string.default_novalue));
                 pitSet.setText(getString(R.string.default_novalue));

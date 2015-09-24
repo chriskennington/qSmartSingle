@@ -39,9 +39,10 @@
                         android:layout_centerVertical="true"
                         android:layout_marginLeft="25dp"
                         android:layout_marginTop="25dp"
-                        android:layout_marginBottom="25dp"
+                        android:layout_marginBottom="0dp"
                         android:textSize="30sp"
-                        android:textColor="@color/White"/>
+                        android:textColor="@color/White"
+                        style="TextAppearance.DeviceDefault.Large"/>
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -57,11 +58,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:text="Address"
+                        android:text="Device Address"
                         android:id="@+id/advanced_device_address"
-                        android:layout_below="@+id/advanced_status_icon"
+                        android:layout_below="@+id/advanced_device_name"
                         android:layout_alignStart="@+id/advanced_device_name"
-                        android:layout_marginStart="15dp"/>
+                        android:layout_marginStart="15dp"
+                        android:layout_marginBottom="10dp"/>
 
                 </RelativeLayout>
             </TableRow>

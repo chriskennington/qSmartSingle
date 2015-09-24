@@ -8,6 +8,7 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -25,6 +26,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.idevicesinc.sweetblue.BleManager;
 import com.idevicesinc.sweetblue.BleManagerConfig;
@@ -36,7 +38,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 
-//TODO UPDATE UI IN STANDARD VIEW!!!!
+
 
 
 public abstract class BaseActivity extends Activity implements ScanFragment.ScanClickListener,
@@ -48,10 +50,11 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
     public static final String NOTIFICATION_CANCELED = "notification_canceled";
     public static final String NOTIFICATION_ACK = "notification_ack";
     public static final int NOTIFICATION_WAIT_TIME = 60000;
+    private static final int CONNECTION_TIMEOUT_LENGTH = 30000;
 
     protected static final int UPDATE_INTERVAL = 2000;
 
-    protected static final int MIN_SWIPE_DISTANCE = 150;
+    protected static final int MIN_SWIPE_DISTANCE = 50;
 
     private Context context;
 
@@ -207,6 +210,14 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         pd.setIndeterminate(true);
         pd.setCancelable(true);
         pd.setMessage("Attempting to connect to your device. Please wait up to 30 seconds");
+        pd.setOnCancelListener(new DialogInterface.OnCancelListener()
+        {
+            @Override
+            public void onCancel(DialogInterface dialog)
+            {
+                service.cancelConnectionAttempt(false);
+            }
+        });
         pd.show();
 
         deviceManager.newDevice(address);
@@ -223,6 +234,8 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
             waitingForDisconnect = true;
             service.disconnectFromDevice();
         }
+
+        handler.postDelayed(connectionTimer, CONNECTION_TIMEOUT_LENGTH);
     }
 
     protected abstract Runnable getUiRunnable();
@@ -381,16 +394,36 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
     {
 
         @Override
+        public void connectionAttemptCanceled()
+        {
+            clearConnectionProgressDialog();
+
+            handler.removeCallbacks(connectionTimer);
+
+            try
+            {
+                //show connection canceled  message
+                MessageDialog md = MessageDialog.newInstance("Notice", "Connection attempt canceled");
+                md.show(getFragmentManager(), "dialog");
+            }
+            catch(IllegalStateException e){e.printStackTrace();}
+        }
+
+        @Override
         public void connectionFailed(String msg, String address)
         {
             //hide adding iq progress dialog
-            if(pd!=null)
-                pd.cancel();
+            clearConnectionProgressDialog();
+
+            handler.removeCallbacks(connectionTimer);
+
             try
             {
                 //show device added message
                 MessageDialog md = MessageDialog.newInstance("Error", "Connection Failed: " + msg);
-                md.show(getFragmentManager(), "dialog");
+                //md.show(getFragmentManager(), "dialog");
+
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
 
                 ScannedDevices.get().addressUndiscovered(address);
             }
@@ -398,24 +431,14 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
 
         }
 
-        @Override
-        public void onServiceReady()
-        {
-
-        }
-
-        @Override
-        public void onServiceStopped()
-        {
-
-        }
 
         @Override
         public void newDeviceAdded(String address)
         {
             //hide adding iq progress dialog
-            if(pd!=null)
-                pd.cancel();
+            clearConnectionProgressDialog();
+
+            handler.removeCallbacks(connectionTimer);
 
             try
             {
@@ -429,8 +452,9 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         @Override
         public void newDeviceFailed(String address)
         {
-            if(pd!=null)
-                pd.cancel();
+            clearConnectionProgressDialog();
+
+            handler.removeCallbacks(connectionTimer);
 
             try
             {
@@ -444,8 +468,7 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         @Override
         public void newDeviceTimeout(String address)
         {
-            if(pd!=null)
-                pd.cancel();
+            clearConnectionProgressDialog();
 
             //show device not added message
             try
@@ -536,7 +559,14 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
     };
 
 
-
+    private Runnable connectionTimer = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            service.connectionAttemptTimedOut(deviceManager.device().getAddress());
+        }
+    };
 
 
     public void actionClick(View v)
@@ -600,5 +630,14 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         else
             //device is null
             v.setImageResource(R.drawable.status_icon_gray);
+    }
+
+    private void clearConnectionProgressDialog()
+    {
+        if(pd!=null)
+        {
+            pd.setOnCancelListener(null);
+            pd.cancel();
+        }
     }
 }

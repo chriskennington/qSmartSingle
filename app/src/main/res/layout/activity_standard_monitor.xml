@@ -26,8 +26,7 @@
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"
             android:layout_marginStart="25dp"
-            android:textSize="30sp"
-            android:nestedScrollingEnabled="false"/>
+            style="@android:style/TextAppearance.DeviceDefault.Large"/>
 
         <ImageView
             android:layout_width="wrap_content"
