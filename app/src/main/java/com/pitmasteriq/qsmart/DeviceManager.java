@@ -152,26 +152,35 @@ public class DeviceManager
     }
 
 
-    public void updateValues(List<Short> values)
+    public boolean updateValues(List<Short> values)
     {
-        device.config().setPitAlarmDeviation(values.get(0));
-        device.config().setDelayTime(values.get(1));
-        device.config().setDelayPitSet(values.get(2));
-        device.pitProbe().setTemperature(values.get(3));
-        device.food1Probe().setTemperature(values.get(4));
-        device.food2Probe().setTemperature(values.get(5));
-        device.config().setPitSet(values.get(6));
-        device.config().setFood1AlarmTemp(values.get(7));
-        device.config().setFood2AlarmTemp(values.get(8));
-        device.setBlowerPower(values.get(9));
-        device.config().setFood1Temp(values.get(10));
-        device.config().setFood1PitSet(values.get(11));
-        device.config().setFood2Temp(values.get(12));
-        device.config().setFood2PitSet(values.get(13));
+        try
+        {
+            device.config().setPitAlarmDeviation(values.get(0));
+            device.config().setDelayTime(values.get(1));
+            device.config().setDelayPitSet(values.get(2));
+            device.pitProbe().setTemperature(values.get(3));
+            device.food1Probe().setTemperature(values.get(4));
+            device.food2Probe().setTemperature(values.get(5));
+            device.config().setPitSet(values.get(6));
+            device.config().setFood1AlarmTemp(values.get(7));
+            device.config().setFood2AlarmTemp(values.get(8));
+            device.setBlowerPower(values.get(9));
+            device.config().setFood1Temp(values.get(10));
+            device.config().setFood1PitSet(values.get(11));
+            device.config().setFood2Temp(values.get(12));
+            device.config().setFood2PitSet(values.get(13));
 
-        //TODO add minutes past somehow??
-        device.config().setMinutesPast(values.get(14
-        ));
+            //TODO add minutes past somehow??
+            device.config().setMinutesPast(values.get(14
+            ));
+        }
+        catch(NullPointerException e)
+        {
+            return false;
+        }
+
+        return true;
     }
 
 }

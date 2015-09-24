@@ -22,7 +22,20 @@ public class Notifications
     {
         Context c = getApplicationContext(context);
 
+        //Notification notification = new Notification(R.drawable.logo, "Custom Notification", System.currentTimeMillis());
+
         Notification.Builder builder = new Notification.Builder(c);
+
+
+/*
+        RemoteViews contentView = new RemoteViews(context.getPackageName(), R.layout.notification_service);
+        contentView.setImageViewResource(R.id.image, R.drawable.logo);
+        contentView.setTextViewText(R.id.title, "qSmart is running");
+        contentView.setTextViewText(R.id.text, "");
+        contentView.setTextViewText(R.id.temp, "255");
+        notification.contentView = contentView;
+*/
+
 
         builder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.logo));
         builder.setSmallIcon(R.drawable.logo);
@@ -41,6 +54,7 @@ public class Notifications
         builder.setContentIntent(rpi);
 
         return builder.build();
+        //return notification;
     }
 
     public static Notification getExceptionNotification(Context context)

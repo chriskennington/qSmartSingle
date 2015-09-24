@@ -113,11 +113,11 @@ public class StandardMonitorActivity extends BaseActivity implements View.OnClic
                         Toast.makeText(this, "swiped left", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(this, AdvancedMonitorActivity.class));
                         finish();
+                        return true;
                     }
                 }
                 break;
         }
-
         return super.onTouchEvent(event);
     }
 

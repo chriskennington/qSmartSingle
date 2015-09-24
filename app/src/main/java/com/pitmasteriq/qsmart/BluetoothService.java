@@ -107,7 +107,7 @@ public class BluetoothService extends Service
 
         Log.i(TAG, "service started");
 
-        startForeground(1,Notifications.getServiceNotification(getApplicationContext()));
+        startForeground(1, Notifications.getServiceNotification(getApplicationContext()));
 
         return Service.START_STICKY;
     }
@@ -291,9 +291,24 @@ public class BluetoothService extends Service
             listener.disconnectFailed();
     }
 
-    public void cancelConnectionAttempt()
+    public void cancelConnectionAttempt(boolean timedOut)
     {
-        connectionTransaction.cancel();
+        connectionTransaction = null;
+        bleManager.disconnectAll();
+
+        //Reset device parameters in here just in case!
+        connectionAttemptActive = false;
+        editor.putString(Preferences.CONNECTED_ADDRESS, null).commit();
+        deviceManager.clear();
+
+        if(!timedOut)  //if the connection timed out dont call connectionAttemptCanceled!
+            listener.connectionAttemptCanceled();
+    }
+
+    public void connectionAttemptTimedOut(String address)
+    {
+        cancelConnectionAttempt(true);
+        listener.newDeviceTimeout(address);
     }
 
     public BleManager.DiscoveryListener discoveryListener = new BleManager.DiscoveryListener()
@@ -436,9 +451,7 @@ public class BluetoothService extends Service
 
     public interface ServiceListener
     {
-        void onServiceReady();
-        void onServiceStopped();
-
+        void connectionAttemptCanceled();
         void connectionFailed(String msg, String address);
 
         void newDeviceAdded(String address);
@@ -717,7 +730,11 @@ public class BluetoothService extends Service
                 }
 
                 //UPDATE DEVICE VALUES
-                deviceManager.updateValues(values);
+                if (!deviceManager.updateValues(values))
+                {
+                    //TODO does something need to be done here?
+                    //for some reason the device is null.
+                }
 
                 //if screen is off, save to file.
                 if (!isAppRunning())

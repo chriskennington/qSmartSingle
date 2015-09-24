@@ -11,5 +11,13 @@
         <item name="android:background">@color/Blue</item>
     </style>
 
+    <style name="NotificationFont" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor" >#ffffff</item>
+    </style>
+
+    <style name="NotificationFontRed" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor" >#ff0000</item>
+    </style>
+
 
 </resources>

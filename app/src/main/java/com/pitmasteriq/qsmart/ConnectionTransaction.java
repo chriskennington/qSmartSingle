@@ -55,16 +55,6 @@ public class ConnectionTransaction
 
     }
 
-    public void cancel()
-    {
-        try
-        {
-            handler.removeCallbacksAndMessages(timer);
-            device.disconnect();
-        }
-        catch(Exception e){e.printStackTrace();}
-    }
-
     private void writePasscode(final BleDevice device)
     {
         this.device = device;
@@ -90,7 +80,7 @@ public class ConnectionTransaction
             {
                 if (e.wasSuccess())
                 {
-                    handler.postDelayed(timer, TIMEOUT_LENGTH);
+                    //handler.postDelayed(timer, TIMEOUT_LENGTH);
 
                     if(device.isNotifyEnabled(Uuid.STATUS_BASIC))
                         e.device().disableNotify(Uuid.STATUS_BASIC);
@@ -121,12 +111,12 @@ public class ConnectionTransaction
                     e.device().disableNotify(Uuid.STATUS_BASIC, this);
                     e.device().disconnect();
 
-                    handler.removeCallbacks(timer);
+                    //handler.removeCallbacks(timer);
                     listener.onPasscodeFailed(e.device());
                 }
                 else
                 {
-                    handler.removeCallbacks(timer);
+                    //handler.removeCallbacks(timer);
                     if( !passcodeAccepted ) //NEW DEVICE!
                     {
                         passcodeAccepted = true;
@@ -163,6 +153,7 @@ public class ConnectionTransaction
         void onPasscodeTimeout(BleDevice device);
     }
 
+    /*
     private Runnable timer = new Runnable()
     {
         @Override
@@ -174,4 +165,5 @@ public class ConnectionTransaction
             listener.onPasscodeTimeout(device);
         }
     };
+    */
 }
