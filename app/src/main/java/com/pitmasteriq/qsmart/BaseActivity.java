@@ -423,20 +423,25 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
 
 
         @Override
-        public void newDeviceAdded(String address)
+        public void newDeviceAdded(String address, boolean reconnected)
         {
             //hide adding iq progress dialog
             clearConnectionProgressDialog();
 
             handler.removeCallbacks(connectionTimer);
 
-            try
+            if (!reconnected) //if the device connected on a reconnect attempt, dont show the device connected dialog
             {
-                //show device added message
-                MessageDialog md = MessageDialog.newInstance("Success", "Device connected successfully!");
-                md.show(getFragmentManager(), "dialog");
+                try
+                {
+                    //show device added message
+                    MessageDialog md = MessageDialog.newInstance("Success", "Device connected successfully!");
+                    md.show(getFragmentManager(), "dialog");
+                } catch (IllegalStateException e)
+                {
+                    e.printStackTrace();
+                }
             }
-            catch(IllegalStateException e){e.printStackTrace();}
         }
 
         @Override

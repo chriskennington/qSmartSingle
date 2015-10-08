@@ -20,6 +20,7 @@ import com.idevicesinc.sweetblue.utils.State;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +37,7 @@ public class BluetoothService extends Service
 
     private final IBinder binder = new BluetoothBinder();
 
+    private StoredDataSource dataSource;
 
     private BleManager bleManager;
 
@@ -96,6 +98,12 @@ public class BluetoothService extends Service
         prefs = getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
         editor = prefs.edit();
 
+        dataSource = new StoredDataSource(this);
+        try
+        {
+            dataSource.open();
+        }
+        catch(SQLException e){}
 
     }
 
@@ -118,6 +126,8 @@ public class BluetoothService extends Service
     public void onDestroy()
     {
         super.onDestroy();
+
+        dataSource.close();
 
         stopForeground(true);
 
@@ -454,7 +464,7 @@ public class BluetoothService extends Service
         void connectionAttemptCanceled();
         void connectionFailed(String msg, String address);
 
-        void newDeviceAdded(String address);
+        void newDeviceAdded(String address, boolean reconnected);
         void newDeviceFailed(String address);
         void newDeviceTimeout(String address);
 
@@ -498,8 +508,7 @@ public class BluetoothService extends Service
             connectionAttemptActive = false;
 
             //set internal preferences to reflect connection status
-            editor.putString(Preferences.CONNECTED_ADDRESS, device.getMacAddress())
-                    .putString(Preferences.RECONNECT_ADDRESS, null).commit();
+
 
             if( deviceManager.device() != null)
             {
@@ -511,7 +520,13 @@ public class BluetoothService extends Service
             }
 
             //notify the activity that we connected
-            listener.newDeviceAdded(device.getMacAddress());
+            if (prefs.getString(Preferences.RECONNECT_ADDRESS, null) != null)
+                listener.newDeviceAdded(device.getMacAddress(), true);
+            else
+                listener.newDeviceAdded(device.getMacAddress(), false);
+
+            editor.putString(Preferences.CONNECTED_ADDRESS, device.getMacAddress())
+                    .putString(Preferences.RECONNECT_ADDRESS, null).commit();
         }
 
         @Override
@@ -729,6 +744,8 @@ public class BluetoothService extends Service
                         deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
                 }
 
+
+
                 //UPDATE DEVICE VALUES
                 if (!deviceManager.updateValues(values))
                 {
@@ -741,6 +758,9 @@ public class BluetoothService extends Service
                 {
                     deviceManager.saveDevice();
                 }
+
+                //store data in database
+                dataSource.createDataString(values);
             }
         }
 
