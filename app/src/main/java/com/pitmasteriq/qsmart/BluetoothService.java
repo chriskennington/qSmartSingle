@@ -95,6 +95,8 @@ public class BluetoothService extends Service
 
         prefs = getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
         editor = prefs.edit();
+
+
     }
 
     @Override
@@ -125,8 +127,6 @@ public class BluetoothService extends Service
 
         Log.i(TAG, "service stopped");
     }
-
-
 
     @Override
     public IBinder onBind(Intent intent)
