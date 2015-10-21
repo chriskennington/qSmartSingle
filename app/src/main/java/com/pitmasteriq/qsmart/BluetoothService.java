@@ -671,7 +671,9 @@ public class BluetoothService extends Service
             if (data.length == 20)
             {
                 short value = 0;
-                List<Short> values = new ArrayList<>();
+                List<Short> values
+
+                        = new ArrayList<>();
 
                 values.add((short) data[0]);
                 values.add((short) data[1]);

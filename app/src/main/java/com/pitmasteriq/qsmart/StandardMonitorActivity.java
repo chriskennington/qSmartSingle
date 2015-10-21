@@ -274,11 +274,12 @@ public class StandardMonitorActivity extends BaseActivity implements View.OnClic
         @Override
         public void run()
         {
-            int blinkRate = 0;
-
             if(ScannedDevices.get().hasNew())
                 if (!scannerAnimating)
                     startScannerAnimation();
+
+            int blinkRate = 0;
+            boolean fahrenheit = userPrefs.getBoolean(Preferences.TEMPERATURE_UNITS, true);
 
 
             Device d = deviceManager.device();
@@ -294,22 +295,34 @@ public class StandardMonitorActivity extends BaseActivity implements View.OnClic
                 food1Name.setText(d.food1Probe().getName());
                 food2Name.setText(d.food2Probe().getName());
 
-                pitSet.setText(String.valueOf(d.config().getPitSet()));
 
 
+                if (fahrenheit)
+                    pitSet.setText(String.valueOf(d.config().getPitSet()));
+                else
+                    pitSet.setText(String.valueOf(f2ca(d.config().getPitSet())));
 
                 if(d.pitProbe().getTemperature() != 999)
-                    pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+                    if(fahrenheit)
+                        pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+                    else
+                        pitTemp.setText(String.valueOf(f2ca(d.pitProbe().getTemperature())));
                 else
                     pitTemp.setText("ERR");
 
                 if(d.food1Probe().getTemperature() != 999)
-                    food1Temp.setText(String.valueOf(d.food1Probe().getTemperature()));
+                    if(fahrenheit)
+                        food1Temp.setText(String.valueOf(d.food1Probe().getTemperature()));
+                    else
+                        food1Temp.setText(String.valueOf(f2ca(d.food1Probe().getTemperature())));
                 else
                     food1Temp.setText(getString(R.string.default_novalue));
 
                 if(d.food2Probe().getTemperature() != 999)
-                    food2Temp.setText(String.valueOf(d.food2Probe().getTemperature()));
+                    if(fahrenheit)
+                        food2Temp.setText(String.valueOf(d.food2Probe().getTemperature()));
+                    else
+                        food2Temp.setText(String.valueOf(f2ca(d.food2Probe().getTemperature())));
                 else
                     food2Temp.setText(getString(R.string.default_novalue));
 
@@ -392,8 +405,6 @@ public class StandardMonitorActivity extends BaseActivity implements View.OnClic
                         }
                     }
                 }
-
-
             }
             else
             {

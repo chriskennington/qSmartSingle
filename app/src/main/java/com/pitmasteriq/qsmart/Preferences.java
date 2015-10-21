@@ -37,5 +37,6 @@ public class Preferences
     public static final String NOTIFICATION_SOUND = "notification_sound";
     public static final String ALARM_SOUND = "alarm_sound";
     public static final String LED_COLOR = "led_flash_color";
+    public static final String TEMPERATURE_UNITS = "temp_units";
 
 }

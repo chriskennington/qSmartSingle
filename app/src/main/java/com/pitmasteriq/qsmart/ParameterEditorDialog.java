@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,9 +26,12 @@ public class ParameterEditorDialog extends DialogFragment
     private Intent intent;
 
     //*** SharedPrefence Objects ****
+    private SharedPreferences userPrefs;
     private SharedPreferences prefs;
     private SharedPreferences.Editor prefEditor;
     //*******************************
+
+    private boolean fahrenheit;
 
     public ParameterEditorDialog(){}
 
@@ -35,8 +40,11 @@ public class ParameterEditorDialog extends DialogFragment
     {
         super.onCreate(savedInstanceState);
 
+        userPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
         prefs = getActivity().getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
         prefEditor = prefs.edit();
+
+        fahrenheit = userPrefs.getBoolean(Preferences.TEMPERATURE_UNITS, true);
     }
 
     @Override
@@ -52,10 +60,15 @@ public class ParameterEditorDialog extends DialogFragment
         Button ok = (Button)v.findViewById(R.id.parameter_editor_ok);
 
         final int selector  = getArguments().getInt("selector", -1);
+        String unitDisplay;
 
+        if (fahrenheit)
+            unitDisplay = "°F";
+        else
+            unitDisplay = "°C";
 
         titleView.setText(getArguments().getString("title"));
-        value.setHint("Current value: " + getArguments().getInt("current"));
+        value.setHint("Current value: " + getArguments().getInt("current") + " " + unitDisplay);
 
         cancel.setOnClickListener(new View.OnClickListener()
         {
@@ -123,13 +136,31 @@ public class ParameterEditorDialog extends DialogFragment
         if(result != null && result.length() > 0)
         {
             int tempValue = Integer.parseInt(result);
+
+            Log.e("TAG", "entered value " + tempValue);
+
+            if (!fahrenheit)
+            {
+                tempValue = c2fa(tempValue);
+            }
+
+            Log.e("TAG", "converted value " + tempValue);
+
             switch(selector)
             {
                 case DeviceConfig.CONFIG_PIT_SET:
                     if(tempValue < 150 || tempValue > 400)
                     {
-                        intent.putExtra("min", 150);
-                        intent.putExtra("max", 400);
+                        if (fahrenheit)
+                        {
+                            intent.putExtra("min", 150);
+                            intent.putExtra("max", 400);
+                        }
+                        else
+                        {
+                            intent.putExtra("min", 66);
+                            intent.putExtra("max", 204);
+                        }
                         return false;
                     }
                     break;
@@ -137,10 +168,18 @@ public class ParameterEditorDialog extends DialogFragment
                 case DeviceConfig.CONFIG_FOOD_2_ALARM:
                 case DeviceConfig.CONFIG_FOOD_1_TEMP:
                 case DeviceConfig.CONFIG_FOOD_2_TEMP:
-                    if( (tempValue < 50 || tempValue > 250) && tempValue != 0 )
+                    if( (tempValue < 100 || tempValue > 250) && tempValue != 0 )
                     {
-                        intent.putExtra("min", 50);
-                        intent.putExtra("max", 250);
+                        if (fahrenheit)
+                        {
+                            intent.putExtra("min", 100);
+                            intent.putExtra("max", 250);
+                        }
+                        else
+                        {
+                            intent.putExtra("min", 10);
+                            intent.putExtra("max", 121);
+                        }
                         return false;
                     }
                     break;
@@ -148,8 +187,16 @@ public class ParameterEditorDialog extends DialogFragment
                 case DeviceConfig.CONFIG_PIT_ALARM:
                     if( (tempValue < 20 || tempValue > 100) && tempValue != 0 )
                     {
-                        intent.putExtra("min", 20);
-                        intent.putExtra("max", 100);
+                        if (fahrenheit)
+                        {
+                            intent.putExtra("min", 20);
+                            intent.putExtra("max", 100);
+                        }
+                        else
+                        {
+                            intent.putExtra("min", 11);
+                            intent.putExtra("max", 56);
+                        }
                         return false;
                     }
                     break;
@@ -159,8 +206,16 @@ public class ParameterEditorDialog extends DialogFragment
                 case DeviceConfig.CONFIG_FOOD_2_PIT_SET:
                     if( (tempValue < 150 || tempValue > 400) && tempValue != 0 )
                     {
-                        intent.putExtra("min", 150);
-                        intent.putExtra("max", 400);
+                        if (fahrenheit)
+                        {
+                            intent.putExtra("min", 150);
+                            intent.putExtra("max", 400);
+                        }
+                        else
+                        {
+                            intent.putExtra("min", 66);
+                            intent.putExtra("max", 204);
+                        }
                         return false;
                     }
                     break;
@@ -182,4 +237,8 @@ public class ParameterEditorDialog extends DialogFragment
         return false;
     }
 
+    private int c2fa(int c)
+    {
+        return (int) (((9.0/5.0) * c) + 32 );
+    }
 }

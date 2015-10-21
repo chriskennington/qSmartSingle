@@ -1,3 +1,8 @@
+0.1.10
+Left off being able to display celsius temps. need to add celsius for range values
+and convert c to f for parameter changes
+
+
 0.1.9
 [CHANGED] Moved the connection time out code to the base activity class
 {CHANGED] Lowered minimum swipe distance in an attempt to make swiping easier

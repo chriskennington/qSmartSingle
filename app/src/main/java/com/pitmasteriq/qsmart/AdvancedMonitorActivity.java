@@ -262,6 +262,7 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
                 startScannerAnimation();
 
             int blinkRate = 0;
+            boolean fahrenheit = userPrefs.getBoolean(Preferences.TEMPERATURE_UNITS, true);
 
             Device d = deviceManager.device();
             if(d != null)
@@ -279,21 +280,38 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
                 food1ProbeName.setText(d.food1Probe().getName());
                 food2ProbeName.setText(d.food2Probe().getName());
                 blowerPower.setText(String.valueOf(d.getBlowerPower()));
-                pitSet.setText(String.valueOf(d.config().getPitSet()));
-                pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+
+                if (fahrenheit)
+                    pitSet.setText(String.valueOf(d.config().getPitSet()));
+                else
+                    pitSet.setText(String.valueOf(f2ca(d.config().getPitSet())));
+
+                if (fahrenheit)
+                    pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+                else
+                    pitTemp.setText(String.valueOf(f2ca(d.pitProbe().getTemperature())));
 
                 if(d.pitProbe().getTemperature() != 999)
-                    pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+                    if (fahrenheit)
+                        pitTemp.setText(String.valueOf(d.pitProbe().getTemperature()));
+                    else
+                        pitTemp.setText(String.valueOf(f2ca(d.pitProbe().getTemperature())));
                 else
                     pitTemp.setText("ERR");
 
                 if(d.food1Probe().getTemperature() != 999)
-                    food1Temp.setText(String.valueOf(d.food1Probe().getTemperature()));
+                    if (fahrenheit)
+                        food1Temp.setText(String.valueOf(d.food1Probe().getTemperature()));
+                    else
+                        food1Temp.setText(String.valueOf(f2ca(d.food1Probe().getTemperature())));
                 else
                     food1Temp.setText(getString(R.string.default_novalue));
 
                 if(d.food2Probe().getTemperature() != 999)
-                    food2Temp.setText(String.valueOf(d.food2Probe().getTemperature()));
+                    if (fahrenheit)
+                        food2Temp.setText(String.valueOf(d.food2Probe().getTemperature()));
+                    else
+                        food2Temp.setText(String.valueOf(f2ca(d.food2Probe().getTemperature())));
                 else
                     food2Temp.setText(getString(R.string.default_novalue));
 
@@ -310,19 +328,34 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
                 }
 
                 if(d.config().getFood1AlarmTemp() > 0)
-                    food1Alarm.setText(String.valueOf(d.config().getFood1AlarmTemp()));
+                    if (fahrenheit)
+                        food1Alarm.setText(String.valueOf(d.config().getFood1AlarmTemp()));
+                    else
+                        food1Alarm.setText(String.valueOf(f2ca(d.config().getFood1AlarmTemp())));
                 else
                     food1Alarm.setText(getString(R.string.default_novalue));
 
                 if(d.config().getFood2AlarmTemp() > 0)
-                    food2Alarm.setText(String.valueOf(d.config().getFood2AlarmTemp()));
+                    if (fahrenheit)
+                        food2Alarm.setText(String.valueOf(d.config().getFood2AlarmTemp()));
+                    else
+                        food2Alarm.setText(String.valueOf(f2ca(d.config().getFood2AlarmTemp())));
                 else
                     food2Alarm.setText(getString(R.string.default_novalue));
 
+
                 if(d.config().getFood1Temp() > 0 || d.config().getFood1PitSet() > 0)
                 {
-                    food1PitSet.setText(String.valueOf(d.config().getFood1PitSet()));
-                    atFood1Temp.setText(String.valueOf(d.config().getFood1Temp()));
+                    if (fahrenheit)
+                    {
+                        food1PitSet.setText(String.valueOf(d.config().getFood1PitSet()));
+                        atFood1Temp.setText(String.valueOf(d.config().getFood1Temp()));
+                    }
+                    else
+                    {
+                        food1PitSet.setText(String.valueOf(f2ca(d.config().getFood1PitSet())));
+                        atFood1Temp.setText(String.valueOf(f2ca(d.config().getFood1Temp())));
+                    }
                 }
                 else
                 {
@@ -332,8 +365,16 @@ public class AdvancedMonitorActivity extends BaseActivity implements View.OnClic
 
                 if(d.config().getFood2Temp() > 0 || d.config().getFood2PitSet() > 0)
                 {
-                    food2PitSet.setText(String.valueOf(d.config().getFood2PitSet()));
-                    atFood2Temp.setText(String.valueOf(d.config().getFood2Temp()));
+                    if (fahrenheit)
+                    {
+                        food2PitSet.setText(String.valueOf(d.config().getFood2PitSet()));
+                        atFood2Temp.setText(String.valueOf(d.config().getFood2Temp()));
+                    }
+                    else
+                    {
+                        food2PitSet.setText(String.valueOf(f2ca(d.config().getFood2PitSet())));
+                        atFood2Temp.setText(String.valueOf(f2ca(d.config().getFood2Temp())));
+                    }
                 }
                 else
                 {

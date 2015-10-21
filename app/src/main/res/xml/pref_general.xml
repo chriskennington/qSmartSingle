@@ -28,6 +28,18 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="System">
+
+        <SwitchPreference
+            android:key="temp_units"
+            android:title="Temperature Units"
+            android:switchTextOn="°F"
+            android:switchTextOff="°C"
+            android:defaultValue="true"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="Security" >
 
         <EditTextPreference
@@ -39,5 +51,7 @@
             android:defaultValue = "0000"/>
 
     </PreferenceCategory>
+
+
 
 </PreferenceScreen>

@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,6 +61,7 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
     protected Handler handler = new Handler();
     public BluetoothService service;
     private boolean serviceBound = false;
+    protected SharedPreferences userPrefs;
     protected SharedPreferences prefs;
     protected SharedPreferences.Editor editor;
     protected static BleManager bleManager;
@@ -87,7 +89,7 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
 
         showCustomActionBar();
 
-
+        userPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         prefs = getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
         editor = prefs.edit();
 
@@ -249,6 +251,21 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         actionBarTitle = (TextView) v.findViewById(R.id.action_bar_title);
     }
 
+    protected int f2ca(int f)
+    {
+        return (int) ((5.0/9.0)*(f-32));
+    }
+
+    protected int f2cr(int f)
+    {
+        return (int) ((5.0/9.0) * f);
+    }
+
+    protected int c2fa(int c)
+    {
+        return (int) (((9.0/5.0) * c) + 32 );
+    }
+
     protected void openScanFragment()
     {
         ScannedDevices.get().clearHasNew();
@@ -335,7 +352,10 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
 
     protected void openParameterDialog(String title, int current, int selector)
     {
-
+        if (!userPrefs.getBoolean(Preferences.TEMPERATURE_UNITS, true)) //if celisus convert current
+        {
+            current = f2ca(current);
+        }
 
         DialogFragment edit = new ParameterEditorDialog();
 
@@ -364,7 +384,11 @@ public abstract class BaseActivity extends Activity implements ScanFragment.Scan
         if (resultCode == Activity.RESULT_OK)
         {
             int selector = data.getIntExtra("selector", -1);
-            service.updateConfigurationValue(selector, data.getIntExtra("value", -1));
+            int value = data.getIntExtra("value", -1);
+
+            Log.e("TAG", "sending value " + value);
+
+            service.updateConfigurationValue(selector, value);
         }
         else
         {
