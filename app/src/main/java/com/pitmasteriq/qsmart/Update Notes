@@ -1,4 +1,4 @@
-0.1.10
+1.0.0
 Left off being able to display celsius temps. need to add celsius for range values
 and convert c to f for parameter changes
 

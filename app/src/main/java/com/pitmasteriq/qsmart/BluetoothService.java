@@ -648,12 +648,6 @@ public class BluetoothService extends Service
     }
 
 
-
-
-
-
-
-
     private class ParseDataRunnable implements Runnable
     {
         private BleDevice device;

@@ -68,7 +68,6 @@ public class ConnectionTransaction
             return;
         }
 
-        //TODO get actual password
 
         data = ByteBuffer.allocate(2).putShort( value ).array();
         Log.w("TAG", getResponseString(data)[1]);

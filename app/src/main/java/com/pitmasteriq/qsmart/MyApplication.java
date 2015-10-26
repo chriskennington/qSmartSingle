@@ -2,7 +2,6 @@ package com.pitmasteriq.qsmart;
 
 import android.app.Application;
 
-import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
 
 @ReportsCrashes
@@ -18,6 +17,6 @@ public class MyApplication extends Application
 
 
         // The following line triggers the initialization of ACRA
-        ACRA.init(this);
+        //ACRA.init(this);
     }
 }
