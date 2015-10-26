@@ -1,0 +1,186 @@
+<LinearLayout   xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="com.pitmasteriq.qsmart.StandardMonitorActivity"
+                android:weightSum="1"
+                android:background="@drawable/monitor_background">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.20"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="2.5dp"
+        android:layout_marginBottom="2.5dp"
+        android:background="@drawable/monitor_main_row_background">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Device Name"
+            android:id="@+id/standard_device_name"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="25dp"
+            style="@android:style/TextAppearance.DeviceDefault.Large"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/standard_status_icon"
+            android:layout_alignParentTop="false"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="25dp"
+            android:src="@drawable/status_icon_gray"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/standard_debug"
+            android:layout_alignParentBottom="false"
+            android:layout_alignParentStart="false"
+            android:layout_below="@+id/standard_device_name"
+            android:layout_alignLeft="@+id/standard_device_name"
+            android:layout_marginLeft="20dp"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.20"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="2.5dp"
+        android:layout_marginBottom="2.5dp"
+        android:background="@drawable/monitor_main_row_background"
+        android:id="@+id/standard_pit_set_click_loc"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pit Set"
+            android:id="@+id/standard_pit_set_lbl"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:textSize="20sp"
+            android:layout_marginLeft="25sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="999"
+            android:id="@+id/standard_pit_set_value"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="60sp"
+            android:layout_marginRight="25dp"
+            android:textColor="@color/Red"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.20"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="2.5dp"
+        android:layout_marginBottom="2.5dp"
+        android:background="@drawable/monitor_main_row_background">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pit Temp"
+            android:id="@+id/standard_pit_temp_lbl"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:textSize="20sp"
+            android:layout_marginLeft="25sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="999"
+            android:id="@+id/standard_pit_temp_value"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="60sp"
+            android:layout_marginRight="25dp"
+            android:textColor="@color/Red"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.20"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="2.5dp"
+        android:layout_marginBottom="2.5dp"
+        android:background="@drawable/monitor_main_row_background"
+        android:id="@+id/standard_food_1_click_loc"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Food 1 Temp"
+            android:id="@+id/standard_food_1_name"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:textSize="20sp"
+            android:layout_marginLeft="25sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="999"
+            android:id="@+id/standard_food_1_temp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="60sp"
+            android:layout_marginRight="25dp"
+            android:textColor="@color/Red"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.20"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="2.5dp"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/monitor_main_row_background"
+        android:id="@+id/standard_food_2_click_loc"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Food 2 Temp"
+            android:id="@+id/standard_food_2_name"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:textSize="20sp"
+            android:layout_marginLeft="25sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="999"
+            android:id="@+id/standard_food_2_temp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="60sp"
+            android:layout_marginRight="25dp"
+            android:textColor="@color/Red"/>
+    </RelativeLayout>
+</LinearLayout>

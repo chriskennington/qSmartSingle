@@ -88,7 +88,8 @@ public class MainActivity extends Activity
             //TODO start service
             if(startService(new Intent(this, BluetoothService.class)) != null)
             {
-                startActivity(new Intent(this, StandardMonitorActivity.class));
+                //startActivity(new Intent(this, StandardMonitorActivity.class));
+                startActivity(new Intent(this, BaseActivity.class));
                 finish();
             }
         }
@@ -116,7 +117,8 @@ public class MainActivity extends Activity
                 //TODO start service
                 if(startService(new Intent(this, BluetoothService.class)) != null)
                 {
-                    startActivity(new Intent(this, StandardMonitorActivity.class));
+                    //startActivity(new Intent(this, StandardMonitorActivity.class));
+                    startActivity(new Intent(this, BaseActivity.class));
                     finish();
                 }
             }

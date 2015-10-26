@@ -15,7 +15,7 @@ import android.widget.Toast;
 import com.idevicesinc.sweetblue.BleDevice;
 
 
-public class StandardMonitorActivity extends BaseActivity implements View.OnClickListener
+public class StandardMonitorActivity extends BaseActivity1 implements View.OnClickListener
 {
 
     //used for detecting swipe

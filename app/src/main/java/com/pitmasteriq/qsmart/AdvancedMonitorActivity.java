@@ -15,7 +15,7 @@ import android.widget.Toast;
 import java.util.Formatter;
 
 
-public class AdvancedMonitorActivity extends BaseActivity implements View.OnClickListener, View.OnTouchListener
+public class AdvancedMonitorActivity extends BaseActivity1 implements View.OnClickListener, View.OnTouchListener
 {
 
 

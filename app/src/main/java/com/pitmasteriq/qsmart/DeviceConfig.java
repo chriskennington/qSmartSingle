@@ -28,18 +28,18 @@ public class DeviceConfig
     public static final int CONFIG_FOOD2_NAME = 102;
 
     private int pitSet = 0;
-    private int food1AlarmTemp = 0;
-    private int food2AlarmTemp = 0;
-    private int pitAlarmDeviation = 0;
+    private Temperature food1AlarmTemp;
+    private Temperature food2AlarmTemp;
+    private Temperature pitAlarmDeviation;
     private int lidDetect = 0;
     private int fanSpeed = 0;
     private int tempUnits = 0;
     private int delayTime = 0;
-    private int delayPitSet = 0;
-    private int food1Temp = 0;
-    private int food1PitSet = 0;
-    private int food2Temp = 0;
-    private int food2PitSet = 0;
+    private Temperature delayPitSet;
+    private Temperature food1Temp;
+    private Temperature food1PitSet;
+    private Temperature food2Temp;
+    private Temperature food2PitSet;
     private int minutesPast = 0;
 
 
@@ -49,14 +49,14 @@ public class DeviceConfig
     public int getPitSet() {return pitSet;}
     public void setPitSet(int pitSet) {this.pitSet = pitSet;}
 
-    public int getFood1AlarmTemp() {return food1AlarmTemp;}
-    public void setFood1AlarmTemp(int food1AlarmTemp) {this.food1AlarmTemp = food1AlarmTemp;}
+    public int getFood1AlarmTemp() {return food1AlarmTemp.get();}
+    public void setFood1AlarmTemp(int food1AlarmTemp) {this.food1AlarmTemp.set(food1AlarmTemp);}
 
-    public int getFood2AlarmTemp() {return food2AlarmTemp;}
-    public void setFood2AlarmTemp(int food2AlarmTemp) {this.food2AlarmTemp = food2AlarmTemp;}
+    public int getFood2AlarmTemp() {return food2AlarmTemp.get();}
+    public void setFood2AlarmTemp(int food2AlarmTemp) {this.food2AlarmTemp.set(food2AlarmTemp);}
 
-    public int getPitAlarmDeviation() {return pitAlarmDeviation;}
-    public void setPitAlarmDeviation(int pitAlarmDeviation) {this.pitAlarmDeviation = pitAlarmDeviation;}
+    public int getPitAlarmDeviation() {return pitAlarmDeviation.get();}
+    public void setPitAlarmDeviation(int pitAlarmDeviation) {this.pitAlarmDeviation.set(pitAlarmDeviation);}
 
     public int getLidDetect() {return lidDetect;}
     public void setLidDetect(int lidDetect) {this.lidDetect = lidDetect;}
@@ -70,20 +70,20 @@ public class DeviceConfig
     public int getDelayTime() {return delayTime;}
     public void setDelayTime(int delayTime) {this.delayTime = delayTime;}
 
-    public int getDelayPitSet() {return delayPitSet;}
-    public void setDelayPitSet(int delayPitSet) {this.delayPitSet = delayPitSet;}
+    public int getDelayPitSet() {return delayPitSet.get();}
+    public void setDelayPitSet(int delayPitSet) {this.delayPitSet.set(delayPitSet);}
 
-    public int getFood1Temp() {return food1Temp;}
-    public void setFood1Temp(int food1Temp) {this.food1Temp = food1Temp;}
+    public int getFood1Temp() {return food1Temp.get();}
+    public void setFood1Temp(int food1Temp) {this.food1Temp.set(food1Temp);}
 
-    public int getFood1PitSet() {return food1PitSet;}
-    public void setFood1PitSet(int food1PitSet) {this.food1PitSet = food1PitSet;}
+    public int getFood1PitSet() {return food1PitSet.get();}
+    public void setFood1PitSet(int food1PitSet) {this.food1PitSet.set(food1PitSet);}
 
-    public int getFood2Temp() {return food2Temp;}
-    public void setFood2Temp(int food2Temp) {this.food2Temp = food2Temp;}
+    public int getFood2Temp() {return food2Temp.get();}
+    public void setFood2Temp(int food2Temp) {this.food2Temp.set(food2Temp);}
 
-    public int getFood2PitSet() {return food2PitSet;}
-    public void setFood2PitSet(int food2PitSet) {this.food2PitSet = food2PitSet;}
+    public int getFood2PitSet() {return food2PitSet.get();}
+    public void setFood2PitSet(int food2PitSet) {this.food2PitSet.set(food2PitSet);}
 
     public int getMinutesPast() { return minutesPast; }
     public void setMinutesPast(int minutesPast) { this.minutesPast = minutesPast; }

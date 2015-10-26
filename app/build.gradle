@@ -23,5 +23,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile files('libs/acra-4.6.1.jar')
     compile files('libs/sweetblue_1_38_28.jar')
+    compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:support-v4:21.0.3'
+    compile 'com.android.support:support-v13:21.0.3'
 }

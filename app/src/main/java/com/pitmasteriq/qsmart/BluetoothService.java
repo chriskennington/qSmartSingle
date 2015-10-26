@@ -1,14 +1,9 @@
 package com.pitmasteriq.qsmart;
 
 import android.app.Service;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.util.Log;
 
 import com.idevicesinc.sweetblue.BleDevice;
@@ -19,114 +14,32 @@ import com.idevicesinc.sweetblue.utils.Interval;
 import com.idevicesinc.sweetblue.utils.State;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class BluetoothService extends Service
 {
-    private static final int UPDATE_INTERVAL = 2000;
-    private static final int TEMPERATURE_OFFSET = 145;
-    private static final int NUMBER_OF_ALARM_BITS = 11;
-
-    private static final String TAG = "service";
 
     private ServiceListener listener;
-
     private final IBinder binder = new BluetoothBinder();
-
 
     private BleManager bleManager;
 
-
-    private DeviceManager deviceManager;
-
-
-    private ExceptionManager exceptionManager;
-
-
-    private PowerManager powerManager;
-
-
-    private UpdateThread updateThread;
-
-    private ConnectionTransaction connectionTransaction;
-
-
-    private boolean isScanning = false;
-    private int scanTime = 500;
-    private int scanInterval = 2000;
-    private boolean updateScanTime = false;
-
-    private boolean connectionAttemptActive = false;
-
-
-    private Handler handler = new Handler();
-
-
-    private SharedPreferences prefs;
-    private SharedPreferences.Editor editor;
-
+    private BleDevice connectingDevice; //device currently attempting connection
+    private BleDevice connectedDevice; //currently connected device
+    private BleDevice reconnectDevice; //device to reconnect to when back in range
 
     public BluetoothService()
     {
     }
 
-    @Override
-    public void onCreate()
-    {
-        super.onCreate();
-
-        bleManager = BleManager.get(getApplicationContext());
-
-
-        deviceManager = DeviceManager.get(getApplicationContext());
-
-
-        exceptionManager = ExceptionManager.get(getApplicationContext());
-
-
-        updateThread = new UpdateThread(handler, new UpdateRunnable(), UPDATE_INTERVAL);
-
-
-        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-
-
-        prefs = getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
-        editor = prefs.edit();
-
-
-    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+        bleManager = BleManager.get(getApplicationContext());
 
-
-        if(!updateThread.isAlive())
-            updateThread.start();
-
-        Log.i(TAG, "service started");
-
-        startForeground(1, Notifications.getServiceNotification(getApplicationContext()));
-
-        return Service.START_STICKY;
+        return START_STICKY;
     }
 
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-
-        stopForeground(true);
-
-        updateThread.setRunning(false);
-
-        stopScanning();
-
-        Log.i(TAG, "service stopped");
-    }
 
     @Override
     public IBinder onBind(Intent intent)
@@ -134,7 +47,11 @@ public class BluetoothService extends Service
         return binder;
     }
 
+    @Override
+    public void onDestroy()
+    {
 
+    }
 
     public class BluetoothBinder extends Binder
     {
@@ -144,171 +61,14 @@ public class BluetoothService extends Service
         }
     }
 
-
-
-    public void updateConfigurationValue(int selector, int value)
+    public interface ServiceListener
     {
-        if(selector == -1 || value == -1 || prefs.getString(Preferences.CONNECTED_ADDRESS, null) == null)
-        {
-            Log.i(TAG, "config change failed " + selector + " " + value + " " + prefs.getString(Preferences.CONNECTED_ADDRESS, null));
-            listener.configurationChangeFailed();
-            return;
-        }
-
-        Log.i(TAG,"Writing Configuration Change.");
-        writeConfigChange(selector, value);
+        void passcodeDeclined();
     }
 
-
-
-
-
-
-
-
-    private void writeConfigChange(int configSelector, int value)
+    public void setServiceListener(ServiceListener listener)
     {
-        String address = prefs.getString(Preferences.CONNECTED_ADDRESS, null);
-
-        if(address == null)
-        {
-            listener.configurationChangeFailed();
-            return;
-        }
-
-        Log.i( TAG, "Attempting to write configuration for " + address);
-
-        BluetoothGattCharacteristic c = null;
-        byte[] data = null;
-
-        BleDevice device = bleManager.getDevice( address );
-        Log.i(TAG, "Config: Updating " + address);
-
-        if( device.is( BleDeviceState.INITIALIZED) )
-        {
-            c = device.getNativeCharacteristic(Uuid.CONFIG_BASIC);
-            if( c != null )
-            {
-                Log.i(TAG, "Writing Configuration Change.");
-
-                short sValue = (short) value;
-
-                if(configSelector == DeviceConfig.CONFIG_PIT_SET || configSelector == DeviceConfig.CONFIG_DELAY_PIT_SET ||
-                        configSelector == DeviceConfig.CONFIG_FOOD_1_PIT_SET || configSelector == DeviceConfig.CONFIG_FOOD_2_PIT_SET )
-                    if (sValue != 0)
-                        sValue -= TEMPERATURE_OFFSET;
-
-                ByteBuffer bytes = ByteBuffer.allocate(2).putShort(sValue);
-                byte[] array = bytes.array();
-
-                data = new byte[3];
-                data[0] = (byte)configSelector;
-                data[1] = array[0];
-                data[2] = array[1];
-
-                Log.d( TAG, "DATA: " + data[0] + " | " + data[1] + " | " + data[2] );
-
-                device.write(Uuid.CONFIG_BASIC, data, new BleDevice.ReadWriteListener()
-                {
-                    @Override
-                    public void onEvent(ReadWriteEvent e)
-                    {
-                        if( e.status() == BleDevice.ReadWriteListener.Status.SUCCESS )
-                        {
-                            Log.i(TAG, "wrote Configuration Change.");
-                            listener.configurationChangeSucceeded();
-                        }
-                        else
-                        {
-                            Log.i(TAG, "failed Configuration Change.");
-                            listener.configurationChangeFailed();
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-
-    public void connectToDevice(String address)
-    {
-        //if (!connectionAttemptActive)
-        //{
-            connectionAttemptActive = true;
-
-
-
-            for (BleDevice d : bleManager.getDevices_List())
-            {
-                if (d.getMacAddress().equals(address))
-                {
-                    d.setConfig(new BleDeviceConfig()
-                    {{
-                            //TODO Uncomment to turn off auto reconnect feature
-                            this.reconnectRequestFilter_longTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
-                            this.reconnectRequestFilter_shortTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
-                            this.reconnectPersistFilter_longTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
-                            this.reconnectPersistFilter_shortTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
-                        }});
-
-
-                    Log.w(TAG, "Starting connection");
-                    d.connect(new ConnectionListener(), new ConnectionFailListener());
-                    return;
-                }
-            }
-            connectionAttemptActive = false;
-            listener.newDeviceFailed(address);
-        //}
-        //else
-        //{
-        //    Toast.makeText(this,"Connection attempt already started. Please Wait...",Toast.LENGTH_SHORT).show();
-        //}
-    }
-
-
-    public void disconnectFromDevice()
-    {
-        String address = prefs.getString(Preferences.CONNECTED_ADDRESS, null);
-        boolean found = false;
-
-        if (address == null)
-        {
-            listener.disconnectFailed();
-            return;
-        }
-
-        for(BleDevice d : bleManager.getDevices_List())
-        {
-            if(d.getMacAddress().equals(address))
-            {
-                d.disconnect();
-                found = true;
-            }
-        }
-
-        if(!found)
-            listener.disconnectFailed();
-    }
-
-    public void cancelConnectionAttempt(boolean timedOut)
-    {
-        connectionTransaction = null;
-        bleManager.disconnectAll();
-
-        //Reset device parameters in here just in case!
-        connectionAttemptActive = false;
-        editor.putString(Preferences.CONNECTED_ADDRESS, null).commit();
-        deviceManager.clear();
-
-        if(!timedOut)  //if the connection timed out dont call connectionAttemptCanceled!
-            listener.connectionAttemptCanceled();
-    }
-
-    public void connectionAttemptTimedOut(String address)
-    {
-        cancelConnectionAttempt(true);
-        listener.newDeviceTimeout(address);
+        this.listener = listener;
     }
 
     public BleManager.DiscoveryListener discoveryListener = new BleManager.DiscoveryListener()
@@ -316,467 +76,189 @@ public class BluetoothService extends Service
         @Override
         public void onEvent(DiscoveryEvent e)
         {
-            boolean serviceFound = false;
-            for (UUID uuid : e.device().getAdvertisedServices())
+            if (e.was(LifeCycle.DISCOVERED)){}
+
+            if (e.was(LifeCycle.REDISCOVERED))
             {
-                if(uuid.equals(Uuid.SERVICE))
-                    serviceFound = true;
-            }
-
-            if(!serviceFound)
-                return;
-
-
-            if (e.lifeCycle() == LifeCycle.DISCOVERED)
-            {
-                ScannedDevices.get().addressDiscovered(e.device().getMacAddress());
-                Log.e("Discovered", e.device().getMacAddress() + ":" + e.device().getName_native());
-            }
-
-            if (e.lifeCycle() == LifeCycle.REDISCOVERED)
-                ScannedDevices.get().addressRediscovered(e.device().getMacAddress());
-
-            if (e.lifeCycle() == LifeCycle.UNDISCOVERED)
-                ScannedDevices.get().addressUndiscovered(e.device().getMacAddress());
-
-
-
-            if (prefs.getString(Preferences.RECONNECT_ADDRESS, null) != null)
-            {
-                if (e.device().getMacAddress().equals(prefs.getString(Preferences.RECONNECT_ADDRESS, null)))
+                if (reconnectDevice != null)
                 {
-                    Log.w(TAG, "Attempting to reconnect to " + e.device().getMacAddress());
-                    deviceManager.newDevice(e.device().getMacAddress());
-                    connectToDevice(e.device().getMacAddress());
+                    if (reconnectDevice.getMacAddress().equals(e.device().getMacAddress()))
+                        startConnection(reconnectDevice);
                 }
             }
+
+            if (e.was(LifeCycle.UNDISCOVERED)){}
         }
     };
 
-    /**
-     * Stops the bluetooth radio from scanning
-     */
-    private void stopScanning()
+    public void connectToAddress(String address)
     {
-        bleManager.stopPeriodicScan();
+        for (BleDevice d : bleManager.getDevices_List())
+            if (d.getMacAddress().equals(address))
+            {
+                connectingDevice = d;
+                startConnection();
+            }
 
-        isScanning = false;
-
-        Log.i(TAG, "scanning stopped");
     }
 
-
-
-
-
-
-    public void setServiceListener(ServiceListener listener)
+    private void startConnection()
     {
-        this.listener = listener;
+
+        connectingDevice.setConfig(new BleDeviceConfig()
+        {{
+                //TODO Uncomment to turn off auto reconnect feature
+                this.reconnectRequestFilter_longTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
+                this.reconnectRequestFilter_shortTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
+                this.reconnectPersistFilter_longTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
+                this.reconnectPersistFilter_shortTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
+            }});
+
+        connectingDevice.connect(new ConnectionStateListener());
     }
 
-
-
-
-    private boolean isAppRunning()
+    private void startConnection(BleDevice d)
     {
-        if( prefs.getBoolean(Preferences.HAS_FOREGROUND, false))
+        connectingDevice = d;
+        startConnection();
+    }
+
+    private void writePasscode()
+    {
+        Log.i("TAG", "sending passcode");
+        short value = Short.parseShort("0001");
+
+        if (value == 0)
         {
-            if(prevAppState == false)
-                appStateChanged = true;
+            //TODO passcode set to 0 send message to user
 
-            prevAppState = true;
-            return true;
+            Log.i("TAG", "passcode 0, quitting");
+            connectingDevice.disconnect();
+            connectingDevice = null;
+
+
+            return;
         }
 
-        if(prevAppState)
-            appStateChanged = true;
+        byte[] data = ByteBuffer.allocate(2).putShort( value ).array();
 
-        prevAppState = false;
-        return false;
-    }
-
-    private boolean appStateChanged = false;
-    private boolean prevAppState = false;       //true for running, false for in background
-
-    private class UpdateRunnable implements Runnable
-    {
-        @Override
-        public void run()
+        connectingDevice.write(Uuid.PASSCODE, data, new BleDevice.ReadWriteListener()
         {
-            if(deviceManager.device() != null)
+            @Override
+            public void onEvent(BleDevice.ReadWriteListener.ReadWriteEvent e)
             {
-                if (deviceManager.device().exceptions().hasAlarm())
+                Log.i("TAG", "test");
+                if (e.wasSuccess())
                 {
-                    exceptionManager.startAlarm();
-                    exceptionManager.sendExceptionNotification();
-                }
-                else if (deviceManager.device().exceptions().hasNotify())
-                {
-                    exceptionManager.sendExceptionNotification();
+                    Log.i("TAG", "test");
+                    new BackgroundThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            // sleep for 3 seconds before checking passcode response
+                            Log.i("TAG", "sleeping for 3 seconds");
+                            try{Thread.sleep(3000);} catch(InterruptedException e){}
+
+                            Log.i("TAG", "checking passcode validity");
+                            checkPasscodeValidity();
+                        }
+                    }).start();
                 }
                 else
                 {
-                    if(exceptionManager.isAlarmSounding())
-                        exceptionManager.stopAlarm();
-
-                    if(exceptionManager.isNotificationActive())
-                        exceptionManager.cancelNotification(ExceptionManager.ALARM);
+                    Log.i("TAG", "write failed?");
                 }
             }
-
-
-
-            //check for disconnect error
-            if(prefs != null)
-            {
-                if (prefs.getString(Preferences.RECONNECT_ADDRESS, null) != null)
-                {
-                    long lostTime = prefs.getLong(Preferences.CONNECTION_LOST_TIME, -1);
-
-                    if (lostTime == -1)
-                        return;
-
-                    if (System.currentTimeMillis() - lostTime > (10000))
-                        if (deviceManager.device() != null)
-                            deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
-                }
-            }
-        }
+        });
     }
 
-
-
-
-
-    public interface ServiceListener
+    private void checkPasscodeValidity()
     {
-        void connectionAttemptCanceled();
-        void connectionFailed(String msg, String address);
-
-        void newDeviceAdded(String address);
-        void newDeviceFailed(String address);
-        void newDeviceTimeout(String address);
-
-        void configurationChangeFailed();
-        void configurationChangeSucceeded();
-
-        void disconnectFailed();
-        void disconnectSucceeded();
-    }
-
-
-
-
-
-
-
-
-
-
-    private void startTransaction(BleDevice d)
-    {
-        connectionTransaction = new ConnectionTransaction(getApplicationContext());
-        connectionTransaction.setConnectionListener(connectionResponseListener);
-        connectionTransaction.start(d);
-    }
-
-
-
-    private ConnectionTransaction.ConnectionListener connectionResponseListener = new ConnectionTransaction.ConnectionListener()
-    {
-        @Override
-        public void onDataReceived(BleDevice device, byte[] data)
+        connectingDevice.read(Uuid.STATUS_BASIC, new BleDevice.ReadWriteListener()
         {
-            //TODO parse data
-            new BackgroundThread(new ParseDataRunnable(device, data)).start();
-        }
-
-        @Override
-        public void onPasscodeAccepted(BleDevice device)
-        {
-            connectionAttemptActive = false;
-
-            //set internal preferences to reflect connection status
-            editor.putString(Preferences.CONNECTED_ADDRESS, device.getMacAddress())
-                    .putString(Preferences.RECONNECT_ADDRESS, null).commit();
-
-            if( deviceManager.device() != null)
+            @Override
+            public void onEvent(ReadWriteEvent e)
             {
-                //remove connection lost flag from device
-                deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.CONNECTION_LOST);
+                for (int i=0; i<20; i++)
+                    Log.e("TAG", "" + e.data()[i]);
 
-                //update device status
-                deviceManager.device().setStatus(Device.Status.OK);
-            }
-
-            //notify the activity that we connected
-            listener.newDeviceAdded(device.getMacAddress());
-        }
-
-        @Override
-        public void onPasscodeFailed(BleDevice device)
-        {
-            connectionAttemptActive = false;
-
-            if(prefs.getString(Preferences.RECONNECT_ADDRESS, null) == null)
-            {
-                //passcode failed on initial connection
-                deviceManager.clear();
-                listener.newDeviceFailed(device.getMacAddress());
-            }
-            else
-            {
-                //passcode failed on reconnect attempt
-                editor.putString(Preferences.RECONNECT_ADDRESS, null).commit();
-                deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
-            }
-
-        }
-
-        @Override
-        public void onPasscodeTimeout(BleDevice device)
-        {
-            connectionAttemptActive = false;
-
-            if(prefs.getString(Preferences.RECONNECT_ADDRESS, null) == null)
-            {
-                //passcode timed out on initial connection
-                listener.newDeviceTimeout(device.getMacAddress());
-                deviceManager.clear();
-            }
-            else
-            {
-                try
+                if (e.data()[19] == 1) //bad passcode response
                 {
-                    //passcode timed out on a reconnect attempt
-                    editor.putString(Preferences.RECONNECT_ADDRESS, null).commit();
-                    deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
-                }
-                catch(NullPointerException e)
+                    badPasscodeResponse();
+                } else if (e.data()[19] == 0) //good passcode response
                 {
-                    //Something bad happened
-                    deviceManager.clear();
+                    goodPasscodeResponse();
                 }
             }
-        }
-    };
+        });
+    }
 
+    private void badPasscodeResponse()
+    {
+        connectingDevice = null;
+        Log.i("TAG", "passcode declined");
+    }
 
-    private class ConnectionListener implements BleDevice.StateListener
+    private void goodPasscodeResponse()
+    {
+        Log.i("TAG", "passcode accepted");
+        connectedDevice = connectingDevice;
+        connectingDevice = null;
+        reconnectDevice = null;
+
+        connectedDevice.enableNotify(Uuid.STATUS_BASIC, new DataListener());
+
+        //TODO send message to user
+    }
+
+    private class ConnectionStateListener implements BleDevice.StateListener
     {
         @Override
         public void onEvent(StateEvent e)
         {
-            if(e.didEnter(BleDeviceState.CONNECTED))
+            if (e.didEnter(BleDeviceState.INITIALIZED))
             {
-                Log.i(TAG, "connected to " + e.device().getMacAddress());
-            }
+                Log.i("TAG", "initialized");
 
-            if(e.didEnter(BleDeviceState.INITIALIZED))
-            {
-                Log.i(TAG, "initialized to " + e.device().getMacAddress());
-
-                if(e.device().is(BleDeviceState.BONDED))
-                {
-                    Log.i(TAG, "already bonded to " + e.device().getMacAddress());
-                    startTransaction(e.device());
-                }
+                if (e.device().is(BleDeviceState.BONDED))
+                    writePasscode();
                 else
-                {
-                    e.device().bond(new BleDevice.BondListener()
-                    {
-                        @Override
-                        public void onEvent(BondEvent e)
-                        {
-                            if(e.wasSuccess())
-                            {
-                                Log.i(TAG, "bonded to " + e.device().getMacAddress());
-                                startTransaction(e.device());
-                            }
-                        }
-                    });
-                }
+                    e.device().bond();
             }
 
-            if(e.didEnter(BleDeviceState.DISCONNECTED))
+            if (e.didEnter(BleDeviceState.BONDED))
             {
-                connectionAttemptActive = false;
+                Log.i("TAG", "bonded");
+                writePasscode();
+            }
 
-                e.device().unbond();
+            if (e.didEnter(BleDeviceState.DISCONNECTED))
+            {
+                Log.i("TAG", "disconnected");
 
-                editor.putString(Preferences.CONNECTED_ADDRESS, null).commit();
 
                 State.ChangeIntent state = e.device().getLastDisconnectIntent();
 
                 if(state == State.ChangeIntent.INTENTIONAL)
                 {
-                    Log.i(TAG, "Intentional disconnect from " + e.device().getMacAddress());
-
-                    listener.disconnectSucceeded();
-
-                    if (deviceManager.device() != null)
-                        deviceManager.device().setStatus(Device.Status.Disconnected);
+                    connectedDevice = null;
                 }
                 else
                 {
-                    Log.i(TAG, "Unintentional disconnect from " + e.device().getMacAddress());
-
-                    if (deviceManager.device() != null)
-                        deviceManager.device().setStatus(Device.Status.LostConnection);
-
-                    editor.putString(Preferences.RECONNECT_ADDRESS, e.device().getMacAddress())
-                            .putLong(Preferences.CONNECTION_LOST_TIME, System.currentTimeMillis()).commit();
+                    reconnectDevice = connectedDevice;
+                    connectedDevice = null;
                 }
             }
         }
     }
 
-    private class ConnectionFailListener implements BleDevice.ConnectionFailListener
+    private class DataListener implements BleDevice.ReadWriteListener
     {
         @Override
-        public Please onEvent(ConnectionFailEvent event)
+        public void onEvent(ReadWriteEvent e)
         {
-            connectionAttemptActive = false;
-            listener.connectionFailed(event.status().toString(), event.device().getMacAddress());
-            editor.putString(Preferences.CONNECTED_ADDRESS, null).commit();
-            deviceManager.clear();
-
-            Log.e(TAG, "Connection Failed: " + event.device().getMacAddress() + " : " + event.status());
-            return null;
+            Log.i("TAG", "Data updated");
         }
     }
-
-
-    private class ParseDataRunnable implements Runnable
-    {
-        private BleDevice device;
-        private byte[] data;
-
-        public ParseDataRunnable(BleDevice device, byte[] data)
-        {
-            this.device = device;
-            this.data = data;
-        }
-
-        @Override
-        public void run()
-        {
-            if (data.length == 20)
-            {
-                short value = 0;
-                List<Short> values
-
-                        = new ArrayList<>();
-
-                values.add((short) data[0]);
-                values.add((short) data[1]);
-
-                value = bytesToShort((byte) 0, data[2]);
-                values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
-
-                values.add(bytesToShort(data[3], data[4]));
-                values.add(bytesToShort(data[5], data[6]));
-                values.add(bytesToShort(data[7], data[8]));
-
-                value = bytesToShort((byte) 0, data[10]);
-                values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
-
-                values.add(bytesToShort((byte) 0, data[11]));
-                values.add(bytesToShort((byte) 0, data[12]));
-                values.add((short) data[13]);
-                values.add(bytesToShort((byte) 0, data[16]));
-
-                value = bytesToShort((byte) 0, data[17]);
-                values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
-
-                values.add(bytesToShort((byte) 0, data[18]));
-
-                value = bytesToShort((byte) 0, data[19]);
-                values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
-
-                values.add(getHighBits((short)data[9]));
-
-                //convert two byte flag bit fields into short
-
-                short flagBits = bytesToShort(data[14], data[15]);
-                //convert short into boolean array by converting each bit in the
-                //short from a 1 to true and 0 to false
-                boolean bits[] = new boolean[NUMBER_OF_ALARM_BITS];
-
-                String flagHash = "";
-                for (int i = NUMBER_OF_ALARM_BITS - 1; i >= 0; i--)
-                {
-                    flagHash += (flagBits & (1 << i));
-                    bits[i] = (flagBits & (1 << i)) != 0;
-                }
-
-
-
-                if(deviceManager.device() != null)
-                {
-                    //TODO If flag bits have changed, do something
-                    if (deviceManager.device().exceptions().compareHash(flagHash) == false)
-                        handleFlagBits(bits);
-
-                    if (values.get(3) == 999)
-                        deviceManager.device().exceptions().addException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
-                    else
-                        deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
-                }
-
-                //UPDATE DEVICE VALUES
-                if (!deviceManager.updateValues(values))
-                {
-                    //TODO does something need to be done here?
-                    //for some reason the device is null.
-                }
-
-                //if screen is off, save to file.
-                if (!isAppRunning())
-                {
-                    deviceManager.saveDevice();
-                }
-            }
-        }
-
-        private void handleFlagBits(boolean[] bits)
-        {
-            String flags = "";
-            for (int i = 0; i < bits.length; i++)
-            {
-                if (bits[i])
-                {
-                    flags += "1 | ";
-
-                    deviceManager.device().exceptions().addException(i);
-                }
-                else // bit is false
-                {
-                    flags += "0 | ";
-
-                    deviceManager.device().exceptions().removeException(i);
-                }
-            }
-
-            Log.e(TAG, flags);
-        }
-
-        private short getHighBits(short value)
-        {
-            int high = (value & 0XF0) >> 4;
-            return (short) high;
-        }
-
-        private short bytesToShort(byte i, byte j)
-        {
-            ByteBuffer bb = ByteBuffer.allocate(2);
-            bb.order(ByteOrder.LITTLE_ENDIAN);
-            bb.put(j);
-            bb.put(i);
-            return bb.getShort(0);
-        }
-    }
-
-
 }

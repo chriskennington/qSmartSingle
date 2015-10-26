@@ -97,7 +97,7 @@ public class ExceptionManager
             mp.stop();
             //set the value in preferences to true
             context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, false)
-                    .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + BaseActivity.NOTIFICATION_WAIT_TIME).commit();
+                    .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + BaseActivity1.NOTIFICATION_WAIT_TIME).commit();
 
             alarmSounding = false;
             return true;
@@ -140,7 +140,7 @@ public class ExceptionManager
         builder.setContentInfo("One or more expections have been detected with your device.");
 
         Intent cancelIntent = new Intent(context, NotificationBroadcastReceiver.class);
-        cancelIntent.setAction(BaseActivity.NOTIFICATION_CANCELED);
+        cancelIntent.setAction(BaseActivity1.NOTIFICATION_CANCELED);
         PendingIntent cpi = PendingIntent.getBroadcast(context, 1 , cancelIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setDeleteIntent(cpi);
 
@@ -151,7 +151,7 @@ public class ExceptionManager
         // Adds the Intent to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
         // Gets a PendingIntent containing the entire back stack
-        resultIntent.setAction(BaseActivity.NOTIFICATION_ACK);
+        resultIntent.setAction(BaseActivity1.NOTIFICATION_ACK);
         PendingIntent rpi = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
 
         //PendingIntent rpi = PendingIntent.getActivity(context, 1, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -210,7 +210,7 @@ public class ExceptionManager
 
         //set the value in preferences to true
         context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.NOTIFY_SOUNDING, false)
-                .putLong(Preferences.NOTIFY_NEXT_TIME, System.currentTimeMillis() + BaseActivity.NOTIFICATION_WAIT_TIME).commit();
+                .putLong(Preferences.NOTIFY_NEXT_TIME, System.currentTimeMillis() + BaseActivity1.NOTIFICATION_WAIT_TIME).commit();
         return true;
     }
 }

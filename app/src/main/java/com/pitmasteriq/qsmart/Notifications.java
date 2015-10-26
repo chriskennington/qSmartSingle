@@ -48,7 +48,7 @@ public class Notifications
         // Adds the Intent to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
         // Gets a PendingIntent containing the entire back stack
-        resultIntent.setAction(BaseActivity.NOTIFICATION_ACK);
+        resultIntent.setAction(BaseActivity1.NOTIFICATION_ACK);
         PendingIntent rpi = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
 
         builder.setContentIntent(rpi);
@@ -79,7 +79,7 @@ public class Notifications
         builder.setContentInfo("One or more expections have been detected with your device.");
 
         Intent cancelIntent = new Intent(c, NotificationBroadcastReceiver.class);
-        cancelIntent.setAction(BaseActivity.NOTIFICATION_CANCELED);
+        cancelIntent.setAction(BaseActivity1.NOTIFICATION_CANCELED);
         PendingIntent cpi = PendingIntent.getBroadcast(c, 1 , cancelIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setDeleteIntent(cpi);
 
@@ -90,7 +90,7 @@ public class Notifications
         // Adds the Intent to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
         // Gets a PendingIntent containing the entire back stack
-        resultIntent.setAction(BaseActivity.NOTIFICATION_ACK);
+        resultIntent.setAction(BaseActivity1.NOTIFICATION_ACK);
         PendingIntent rpi = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
 
         //PendingIntent rpi = PendingIntent.getActivity(context, 1, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
