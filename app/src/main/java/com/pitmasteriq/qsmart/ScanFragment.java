@@ -19,7 +19,7 @@ import java.util.List;
 
 public class ScanFragment extends DialogFragment
 {
-    private ScanClickListener listener;
+    private FragmentResponseListener listener;
 
     private List<String> addresses;
 
@@ -27,11 +27,6 @@ public class ScanFragment extends DialogFragment
     private RowAdapter rowAdapter;
 
     public ScanFragment(){}
-
-    public interface ScanClickListener
-    {
-        void onScanClick(String address);
-    }
 
 
     @Override
@@ -67,9 +62,10 @@ public class ScanFragment extends DialogFragment
         super.onAttach(activity);
         try
         {
-            listener = (ScanClickListener) activity;
+            listener = (FragmentResponseListener) activity;
         } catch (ClassCastException e)
         {
+
             throw new ClassCastException(activity.toString()
                     + " must implement InfoFragmentListener");
         }
@@ -88,7 +84,7 @@ public class ScanFragment extends DialogFragment
         @Override
         public void onItemClick(AdapterView<?> parent, View view, final int position, long id)
         {
-            listener.onScanClick(addresses.get(position));
+            listener.onFragmentResponse(new FragmentResponseEvent(FragmentResponseEvent.CONNECT_TO_ADDRESS, addresses.get(position)));
             getDialog().dismiss();
         }
     };

@@ -5,11 +5,13 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.drawable.AnimationDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v13.app.FragmentPagerAdapter;
@@ -27,8 +29,15 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 
-public class BaseActivity extends Activity
+public class BaseActivity extends Activity implements FragmentResponseListener
 {
+    public static final String NOTIFICATION_CANCELED = "notification_canceled";
+    public static final String NOTIFICATION_ACK = "notification_ack";
+    public static final int NOTIFICATION_WAIT_TIME = 60000;
+    private static final int CONNECTION_TIMEOUT_LENGTH = 30000;
+    protected static final int UPDATE_INTERVAL = 2000;
+    protected static final int MIN_SWIPE_DISTANCE = 50;
+
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
 
@@ -40,6 +49,9 @@ public class BaseActivity extends Activity
     private boolean serviceBound = false;
     private BleManager bleManager;
     private static final UUID[] WHITELIST = new UUID[]{Uuid.SERVICE, Uuid.CONFIG_BASIC, Uuid.STATUS_BASIC, Uuid.PASSCODE};
+
+
+    private DeviceManager deviceManager;
 
 
 
@@ -67,6 +79,9 @@ public class BaseActivity extends Activity
             }};
 
         bleManager = BleManager.get(getApplicationContext(), config);
+
+
+        deviceManager = DeviceManager.get(getApplicationContext());
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter
@@ -145,6 +160,27 @@ public class BaseActivity extends Activity
         bleManager.onResume();
     }
 
+    @Override
+    public void onFragmentResponse(FragmentResponseEvent e)
+    {
+        switch (e.type())
+        {
+            case FragmentResponseEvent.CONNECT_TO_ADDRESS:
+                service.connectToAddress(e.stringData());
+                break;
+            case FragmentResponseEvent.APPLICATION_CLOSE:
+                shutdownApp();
+                break;
+        }
+    }
+
+    private void shutdownApp()
+    {
+        //TODO disconnect from device
+
+        //TODO stop service
+    }
+
     private void showCustomActionBar()
     {
         ActionBar ab = this.getActionBar();
@@ -191,7 +227,70 @@ public class BaseActivity extends Activity
         @Override
         public void passcodeDeclined()
         {
-            
+
         }
     };
+
+    public void openInfoFragment(View v)
+    {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        removePreviousFragment(ft);
+
+
+        InfoFragment info = new InfoFragment();
+
+        Bundle args = new Bundle();
+        args.putString("app_version", BuildConfig.VERSION_NAME);
+        args.putString("android_version", Build.VERSION.RELEASE);
+        args.putString("manuf", Build.MANUFACTURER);
+        args.putString("model", Build.MODEL);
+
+        info.setArguments(args);
+
+        try
+        {
+            info.show(ft, "dialog");
+        }
+        catch(IllegalStateException e){e.printStackTrace();}
+    }
+
+    public void openScanFragment(View v)
+    {
+        ScannedDevices.get().clearHasNew();
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        removePreviousFragment(ft);
+
+        ScanFragment scan = new ScanFragment();
+
+        String currentAddress = null;
+
+        if(deviceManager.device() != null)
+            currentAddress = deviceManager.device().getAddress();
+
+        Bundle args = new Bundle();
+        args.putString("address", currentAddress);
+        scan.setArguments(args);
+
+
+        try
+        {
+            scan.show(ft, "dialog");
+        }
+        catch(IllegalStateException e){e.printStackTrace();}
+    }
+
+    public void openSettings(View v)
+    {
+        startActivity(new Intent(this, SettingsActivity.class));
+    }
+
+    private void removePreviousFragment(FragmentTransaction fragmentTransaction)
+    {
+        FragmentTransaction ft = fragmentTransaction;
+
+        Fragment prevFrag = getFragmentManager().findFragmentByTag("dialog");
+        if(prevFrag != null)
+            ft.remove(prevFrag).commit();
+    }
 }

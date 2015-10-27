@@ -19,19 +19,13 @@ import android.widget.TextView;
 public class InfoFragment extends DialogFragment
 {
     private Context context;
-    private InfoFragmentListener listener;
+    private FragmentResponseListener listener;
 
     private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
 
 
     public InfoFragment(){}
-
-
-    public interface InfoFragmentListener
-    {
-        void onApplicationClose();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -83,7 +77,7 @@ public class InfoFragment extends DialogFragment
             @Override
             public void onClick(View v)
             {
-                listener.onApplicationClose();
+                listener.onFragmentResponse(new FragmentResponseEvent(FragmentResponseEvent.APPLICATION_CLOSE));
                 dialog.dismiss();
             }
         });
@@ -112,7 +106,7 @@ public class InfoFragment extends DialogFragment
         super.onAttach(activity);
         try
         {
-            listener = (InfoFragmentListener) activity;
+            listener = (FragmentResponseListener) activity;
         } catch (ClassCastException e)
         {
             throw new ClassCastException(activity.toString()

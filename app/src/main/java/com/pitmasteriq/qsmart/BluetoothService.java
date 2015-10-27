@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.idevicesinc.sweetblue.BleDevice;
@@ -73,21 +74,37 @@ public class BluetoothService extends Service
 
     public BleManager.DiscoveryListener discoveryListener = new BleManager.DiscoveryListener()
     {
+        //regex for IQ Name "[I][Q]\d{4}"
+
         @Override
         public void onEvent(DiscoveryEvent e)
         {
-            if (e.was(LifeCycle.DISCOVERED)){}
+            //if name does not match expression assume it is not an IQ and return
+            if (!e.device().getName_native().matches("[I][Q]\\d{4}"))
+                return;
+
+            if (e.was(LifeCycle.DISCOVERED))
+            {
+                ScannedDevices.get().addressDiscovered(e.device().getMacAddress());
+                Log.e("Discovered", e.device().getMacAddress() + ":" + e.device().getName_native());
+            }
 
             if (e.was(LifeCycle.REDISCOVERED))
             {
-                if (reconnectDevice != null)
-                {
-                    if (reconnectDevice.getMacAddress().equals(e.device().getMacAddress()))
-                        startConnection(reconnectDevice);
-                }
+                ScannedDevices.get().addressRediscovered(e.device().getMacAddress());
             }
 
-            if (e.was(LifeCycle.UNDISCOVERED)){}
+            if (e.was(LifeCycle.UNDISCOVERED))
+            {
+                ScannedDevices.get().addressUndiscovered(e.device().getMacAddress());
+            }
+
+            //reconnect to lost device
+            if (reconnectDevice != null)
+            {
+                if (reconnectDevice.getMacAddress().equals(e.device().getMacAddress()))
+                    startConnection(reconnectDevice);
+            }
         }
     };
 
@@ -99,7 +116,6 @@ public class BluetoothService extends Service
                 connectingDevice = d;
                 startConnection();
             }
-
     }
 
     private void startConnection()
@@ -126,7 +142,8 @@ public class BluetoothService extends Service
     private void writePasscode()
     {
         Log.i("TAG", "sending passcode");
-        short value = Short.parseShort("0001");
+        short value = Short.parseShort(PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getString(Preferences.PASSCODE, "0000"));
 
         if (value == 0)
         {
@@ -135,8 +152,6 @@ public class BluetoothService extends Service
             Log.i("TAG", "passcode 0, quitting");
             connectingDevice.disconnect();
             connectingDevice = null;
-
-
             return;
         }
 
