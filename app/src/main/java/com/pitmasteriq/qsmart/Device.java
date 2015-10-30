@@ -112,7 +112,7 @@ public class Device
     {
         private String defaultName = null;
         private String name = null;
-        private Temperature temperature;
+        private Temperature temperature = new Temperature();
 
         public Probe(String defaultName){this.defaultName = defaultName;}
 
@@ -126,8 +126,7 @@ public class Device
 
         public void setName(String name) {this.name = name;}
 
-        public int getTemperature() {return temperature.get();}
-        public void setTemperature(int temperature) {this.temperature.set(temperature);}
+        public Temperature temperature() {return temperature;}
     }
 
 

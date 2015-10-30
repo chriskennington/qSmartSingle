@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -86,6 +85,10 @@ public class ExceptionManager
         //set the value in preferences to true
         context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, true).commit();
 
+
+        //send notification as well as alarm
+        sendExceptionNotification();
+
         return true;
     }
 
@@ -97,9 +100,10 @@ public class ExceptionManager
         if( mp.isPlaying() )
         {
             mp.stop();
+            mp.release();
             //set the value in preferences to true
             context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, false)
-                    .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + NOTIFICATION_WAIT_TIME).commit();
+                    .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + BluetoothService.ALARM_WAIT_TIME).commit();
 
             alarmSounding = false;
             return true;
@@ -142,21 +146,13 @@ public class ExceptionManager
         builder.setContentInfo("One or more expections have been detected with your device.");
 
         Intent cancelIntent = new Intent(context, NotificationBroadcastReceiver.class);
-        //cancelIntent.setAction(BaseActivity1.NOTIFICATION_CANCELED);
+        cancelIntent.setAction(BaseActivity.NOTIFICATION_CANCELED);
         PendingIntent cpi = PendingIntent.getBroadcast(context, 1 , cancelIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setDeleteIntent(cpi);
 
         Intent resultIntent = new Intent(context, BaseActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-        // Adds the back stack
-        //stackBuilder.addParentStack(StandardMonitorActivity.class);
-        // Adds the Intent to the top of the stack
-        stackBuilder.addNextIntent(resultIntent);
-        // Gets a PendingIntent containing the entire back stack
-        //resultIntent.setAction(BaseActivity1.NOTIFICATION_ACK);
-        PendingIntent rpi = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
-
-        //PendingIntent rpi = PendingIntent.getActivity(context, 1, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent rpi = PendingIntent.getActivity(context, 1, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(rpi);
 
         manager.notify(ALARM, builder.build());
@@ -167,6 +163,33 @@ public class ExceptionManager
         context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.NOTIFY_SOUNDING, true).commit();
 
         return true;
+    }
+
+    public Notification getServiceNotification()
+    {
+        //Notification notification = new Notification(R.drawable.logo, "Custom Notification", System.currentTimeMillis());
+
+        Notification.Builder builder = new Notification.Builder(context);
+/*
+        RemoteViews contentView = new RemoteViews(context.getPackageName(), R.layout.notification_service);
+        contentView.setImageViewResource(R.id.image, R.drawable.logo);
+        contentView.setTextViewText(R.id.title, "qSmart is running");
+        contentView.setTextViewText(R.id.text, "");
+        contentView.setTextViewText(R.id.temp, "255");
+        notification.contentView = contentView;
+*/
+        builder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.logo));
+        builder.setSmallIcon(R.drawable.logo);
+        builder.setContentTitle("qSmart Running");
+
+        Intent resultIntent = new Intent(context, BaseActivity.class);
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent rpi = PendingIntent.getActivity(context, 1, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        builder.setContentIntent(rpi);
+
+        return builder.build();
+        //return notification;
     }
 
     private boolean canSendNotify()
@@ -184,7 +207,7 @@ public class ExceptionManager
 
     }
 
-    private boolean canStartAlarm()
+    public boolean canStartAlarm()
     {
         if(manager == null)
             return false;

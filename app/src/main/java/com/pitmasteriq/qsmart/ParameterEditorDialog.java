@@ -22,7 +22,7 @@ import android.widget.TextView;
  */
 public class ParameterEditorDialog extends DialogFragment
 {
-    private ParameterEditorListener listener;
+    private ParameterEditedListener listener;
     private Intent intent;
 
     //*** SharedPrefence Objects ****
@@ -87,14 +87,13 @@ public class ParameterEditorDialog extends DialogFragment
             {
                 intent = getActivity().getIntent();
 
-
                 if( checkValue(value.getText().toString(), selector ))
                 {
-                    listener.parameterChanged(Activity.RESULT_OK, intent);
+                    listener.onParameterChanged(new ParameterEditedEvent(Activity.RESULT_OK, intent));
                 }
                 else
                 {
-                    listener.parameterChanged(Activity.RESULT_CANCELED, intent);
+                    listener.onParameterChanged(new ParameterEditedEvent(Activity.RESULT_CANCELED, intent));
                 }
 
                 getDialog().dismiss();
@@ -111,7 +110,7 @@ public class ParameterEditorDialog extends DialogFragment
         super.onAttach(activity);
         try
         {
-            listener = (ParameterEditorListener) activity;
+            listener = (ParameterEditedListener) activity;
         } catch (ClassCastException e)
         {
             throw new ClassCastException(activity.toString()
@@ -124,11 +123,6 @@ public class ParameterEditorDialog extends DialogFragment
     {
         super.onDetach();
         listener = null;
-    }
-
-    public interface ParameterEditorListener
-    {
-        void parameterChanged(int resultCode, Intent data);
     }
 
     public boolean checkValue(String result, int selector)

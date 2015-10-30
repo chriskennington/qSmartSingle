@@ -75,12 +75,12 @@ public class DeviceManager
         }
 
         device.setDefinedName(prefs.getString("name", null));
-        device.pitProbe().setTemperature(prefs.getInt("pit_temp", -1));
+        device.pitProbe().temperature().set(prefs.getInt("pit_temp", -1));
 
-        device.food1Probe().setTemperature(prefs.getInt("food_1_temp", -1));
+        device.food1Probe().temperature().set(prefs.getInt("food_1_temp", -1));
         device.food1Probe().setName(prefs.getString("food_1_probe_name", null));
 
-        device.food2Probe().setTemperature(prefs.getInt("food_2_temp", -1));
+        device.food2Probe().temperature().set(prefs.getInt("food_2_temp", -1));
         device.food2Probe().setName(prefs.getString("food_2_probe_name", null));
 
         device.setLastUpdateTime(prefs.getLong("last_update_time", -1l));
@@ -119,12 +119,12 @@ public class DeviceManager
 
         editor.putString("address", device.getAddress());
         editor.putString("name", device.getDefinedName());
-        editor.putInt("pit_temp", device.pitProbe().getTemperature());
+        editor.putInt("pit_temp", device.pitProbe().temperature().getRawTemp());
 
-        editor.putInt("food_1_temp", device.food1Probe().getTemperature());
+        editor.putInt("food_1_temp", device.food1Probe().temperature().getRawTemp());
         editor.putString("food_1_probe_name", device.food1Probe().getName());
 
-        editor.putInt("food_2_temp", device.food2Probe().getTemperature());
+        editor.putInt("food_2_temp", device.food2Probe().temperature().getRawTemp());
         editor.putString("food_2_probe_name", device.food2Probe().getName());
 
         editor.putLong("last_update_time", device.getLastUpdateTime());
@@ -156,20 +156,20 @@ public class DeviceManager
     {
         try
         {
-            device.config().setPitAlarmDeviation(values.get(0));
+            device.config().pitAlarmDeviation().set(values.get(0));
             device.config().setDelayTime(values.get(1));
-            device.config().setDelayPitSet(values.get(2));
-            device.pitProbe().setTemperature(values.get(3));
-            device.food1Probe().setTemperature(values.get(4));
-            device.food2Probe().setTemperature(values.get(5));
-            device.config().setPitSet(values.get(6));
-            device.config().setFood1AlarmTemp(values.get(7));
-            device.config().setFood2AlarmTemp(values.get(8));
+            device.config().delayPitSet().set(values.get(2));
+            device.pitProbe().temperature().set(values.get(3));
+            device.food1Probe().temperature().set(values.get(4));
+            device.food2Probe().temperature().set(values.get(5));
+            device.config().pitSet().set(values.get(6));
+            device.config().food1AlarmTemp().set(values.get(7));
+            device.config().food2AlarmTemp().set(values.get(8));
             device.setBlowerPower(values.get(9));
-            device.config().setFood1Temp(values.get(10));
-            device.config().setFood1PitSet(values.get(11));
-            device.config().setFood2Temp(values.get(12));
-            device.config().setFood2PitSet(values.get(13));
+            device.config().food1Temp().set(values.get(10));
+            device.config().food1PitSet().set(values.get(11));
+            device.config().food2Temp().set(values.get(12));
+            device.config().food2PitSet().set(values.get(13));
 
             //TODO add minutes past somehow??
             device.config().setMinutesPast(values.get(14

@@ -1,6 +1,6 @@
 package com.pitmasteriq.qsmart;
 
-import android.content.Context;
+import android.preference.PreferenceManager;
 
 /**
  * Created by Chris on 10/26/2015.
@@ -18,6 +18,11 @@ public class Temperature
         else
             this.temp = temp;
     }*/
+
+    public int getRawTemp()
+    {
+        return temp;
+    }
 
     public int get()
     {
@@ -39,7 +44,7 @@ public class Temperature
 
     private boolean isFahrenheit()
     {
-        if (MyApplication.getAppContext().getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE)
+        if (PreferenceManager.getDefaultSharedPreferences(MyApplication.getAppContext())
                 .getBoolean(Preferences.TEMPERATURE_UNITS, true))
             return true;
         else

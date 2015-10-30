@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.idevicesinc.sweetblue.BleDevice;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -79,8 +81,132 @@ public class StandardFragment extends BaseFragment
     @Override
     protected void updateInterface()
     {
-        counter++;
+        int blinkRate = 0;
 
-        deviceName.setText(""+counter);
+        Device d = deviceManager.device();
+        if(d != null)
+        {
+            deviceName.clearAnimation();
+            pitTemp.clearAnimation();
+            food1Temp.clearAnimation();
+            food2Temp.clearAnimation();
+
+
+            deviceName.setText(d.getDefinedName());
+            food1Name.setText(d.food1Probe().getName());
+            food2Name.setText(d.food2Probe().getName());
+
+
+
+            pitSet.setText(String.valueOf(d.config().pitSet().get()));
+
+            if(d.pitProbe().temperature().getRawTemp() != 999)
+                pitTemp.setText(String.valueOf(d.pitProbe().temperature().get()));
+            else
+                pitTemp.setText("ERR");
+
+            if(d.food1Probe().temperature().getRawTemp() != 999)
+                food1Temp.setText(String.valueOf(d.food1Probe().temperature().get()));
+            else
+                food1Temp.setText(getString(R.string.default_novalue));
+
+            if(d.food2Probe().temperature().getRawTemp() != 999)
+                food2Temp.setText(String.valueOf(d.food2Probe().temperature().get()));
+            else
+                food2Temp.setText(getString(R.string.default_novalue));
+
+
+            if(prefs.getBoolean(Preferences.DEBUG_DISTANCE, false))
+            {
+                for(BleDevice bd : bleManager.getDevices_List())
+                    if(bd.getMacAddress().equals(d.getAddress()))
+                        debug.setText(bd.getDistance().toString());
+            }
+            else
+            {
+                debug.setText("");
+            }
+
+
+
+            if (deviceManager.device().exceptions().hasException())
+            {
+                for(DeviceExceptions.Exception e : deviceManager.device().exceptions().get())
+                {
+                    switch(e)
+                    {
+                        case ENCLOSURE_HOT:
+                            deviceName.setText("ENCLOSURE HOT");
+                            deviceName.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case FOOD_1_PROBE_ERROR:
+                            food1Temp.setText("ERR");
+                            food1Temp.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case FOOD_2_PROBE_ERROR:
+                            food2Temp.setText("ERR");
+                            food2Temp.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case FOOD_1_DONE:
+                            food1Temp.setAnimation(Animations.getBlinkAnimation());
+                            deviceName.setText("Food 1 Done");
+                            deviceName.setAnimation(Animations.getPulseAnimation(1000));
+                            blinkRate = 250;
+                            break;
+                        case FOOD_2_DONE:
+                            food2Temp.setAnimation(Animations.getBlinkAnimation());
+                            deviceName.setText("Food 1 Done");
+                            deviceName.setAnimation(Animations.getPulseAnimation(1000));
+                            blinkRate = 250;
+                            break;
+                        case PIT_HOT:
+                            pitTemp.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case PIT_COLD:
+                            pitTemp.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case LID_OFF:
+                            blinkRate = 250;
+                            break;
+                        case DELAY_PIT_SET:
+                            blinkRate = 250;
+                            break;
+                        case FOOD_1_TEMP_PIT_SET:
+                            blinkRate = 250;
+                            break;
+                        case FOOD_2_TEMP_PIT_SET:
+                            blinkRate = 250;
+                            break;
+                        case PIT_PROBE_ERROR:
+                            pitTemp.setText("ERR");
+                            pitTemp.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case CONNECTION_LOST:
+                            deviceName.setText("CONNECTION LOST");
+                            blinkRate = 500;
+                            break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            deviceName.setText("Device Name");
+            pitSet.setText("---");
+            pitTemp.setText("---");
+            food1Temp.setText("---");
+            food2Temp.setText("---");
+
+            food1Name.setText("Food 1");
+            food2Name.setText("Food 2");
+        }
+
+        updateStatusIcon(statusIcon, blinkRate);
     }
 }

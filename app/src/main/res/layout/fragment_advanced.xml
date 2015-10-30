@@ -42,7 +42,9 @@
                         android:layout_marginBottom="0dp"
                         android:textSize="30sp"
                         android:textColor="@color/White"
-                        style="TextAppearance.DeviceDefault.Large"/>
+                        style="TextAppearance.DeviceDefault.Large"
+                        android:onClick="changeDeviceName"
+                        android:clickable="true"/>
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -52,7 +54,8 @@
                         android:layout_alignParentTop="false"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:layout_marginRight="25dp"/>
+                        android:layout_marginRight="25dp"
+                        android:onClick="openExceptions"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -81,7 +84,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/advanced_pit_set_button">
+                    android:id="@+id/advanced_pit_set_button"
+                    android:onClick="changePitSet">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -102,7 +106,8 @@
                         android:layout_marginTop="15dp"
                         android:layout_marginBottom="10dp"
                         android:textSize="30sp"
-                        android:textColor="@color/Red"/>
+                        android:textColor="@color/Red"
+                        />
 
                 </RelativeLayout>
 
@@ -162,7 +167,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_1s_0s">
+                    android:background="@drawable/bg_1s_0s"
+                    android:onClick="changeProbe1Name">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -208,7 +214,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_1s_0s">
+                    android:background="@drawable/bg_1s_0s"
+                    android:onClick="changeProbe2Name">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -286,7 +293,8 @@
                 <RelativeLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:onClick="changePitDeviation">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -329,7 +337,8 @@
                 <RelativeLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:onClick="changePitDeviation">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -368,7 +377,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="@drawable/bg_1s_0s"
-                    android:id="@+id/advanced_food_1_alarm_button">
+                    android:id="@+id/advanced_food_1_alarm_button"
+                    android:onClick="changeFood1Alarm">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -415,7 +425,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="@drawable/bg_1s_0s"
-                    android:id="@+id/advanced_food_2_alarm_button">
+                    android:id="@+id/advanced_food_2_alarm_button"
+                    android:onClick="changeFood2Alarm">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -454,7 +465,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/advanced_delay_pit_set_button">
+                    android:id="@+id/advanced_delay_pit_set_button"
+                    android:onClick="changeDelayPitSet">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -498,7 +510,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/advanced_delay_time_button">
+                    android:id="@+id/advanced_delay_time_button"
+                    android:onClick="changeDelayTime">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -537,7 +550,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/advanced_food_1_pit_set_button">
+                    android:id="@+id/advanced_food_1_pit_set_button"
+                    android:onClick="changeFood1PitSet">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -581,7 +595,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/advanced_at_food_1_temp_button">
+                    android:id="@+id/advanced_at_food_1_temp_button"
+                    android:onClick="changeAtFood1Temp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -620,7 +635,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/advanced_food_2_pit_set_button">
+                    android:id="@+id/advanced_food_2_pit_set_button"
+                    android:onClick="changeFood2PitSet">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -664,7 +680,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/advanced_at_food_2_temp_button">
+                    android:id="@+id/advanced_at_food_2_temp_button"
+                    android:onClick="changeAtFood2Temp">
 
                     <TextView
                         android:layout_width="wrap_content"

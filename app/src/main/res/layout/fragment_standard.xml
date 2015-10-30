@@ -26,7 +26,10 @@
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"
             android:layout_marginStart="25dp"
-            style="@android:style/TextAppearance.DeviceDefault.Large"/>
+            style="@android:style/TextAppearance.DeviceDefault.Large"
+            android:onClick="changeDeviceName"
+            android:nestedScrollingEnabled="false"
+            android:clickable="true"/>
 
         <ImageView
             android:layout_width="wrap_content"
@@ -36,7 +39,8 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="25dp"
-            android:src="@drawable/status_icon_gray"/>
+            android:src="@drawable/status_icon_gray"
+            android:onClick="openExceptions"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -81,7 +85,9 @@
             android:layout_alignParentEnd="true"
             android:textSize="60sp"
             android:layout_marginRight="25dp"
-            android:textColor="@color/Red"/>
+            android:textColor="@color/Red"
+            android:onClick="changePitSet"
+            android:clickable="true"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -136,7 +142,9 @@
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"
             android:textSize="20sp"
-            android:layout_marginLeft="25sp"/>
+            android:layout_marginLeft="25sp"
+            android:onClick="changeProbe1Name"
+            android:clickable="true"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -170,7 +178,9 @@
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"
             android:textSize="20sp"
-            android:layout_marginLeft="25sp"/>
+            android:layout_marginLeft="25sp"
+            android:onClick="changeProbe2Name"
+            android:clickable="true"/>
 
         <TextView
             android:layout_width="wrap_content"

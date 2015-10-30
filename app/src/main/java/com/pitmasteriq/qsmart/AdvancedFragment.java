@@ -12,6 +12,8 @@ import android.widget.ScrollView;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.util.Formatter;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -125,8 +127,208 @@ public class AdvancedFragment extends BaseFragment
     @Override
     protected void updateInterface()
     {
-        counter++;
+        int blinkRate = 0;
 
-        deviceName.setText(""+counter);
+        Device d = deviceManager.device();
+        if(d != null)
+        {
+            deviceName.clearAnimation();
+            pitTemp.clearAnimation();
+            food1Temp.clearAnimation();
+            food2Temp.clearAnimation();
+            pitAlarmHigh.clearAnimation();
+            pitAlarmLow.clearAnimation();
+
+
+            deviceName.setText(d.getDefinedName());
+            deviceAddress.setText(d.getAddress());
+            food1ProbeName.setText(d.food1Probe().getName());
+            food2ProbeName.setText(d.food2Probe().getName());
+            blowerPower.setText(String.valueOf(d.getBlowerPower()));
+
+            pitSet.setText(String.valueOf(d.config().pitSet().get()));
+            pitTemp.setText(String.valueOf(d.pitProbe().temperature()));
+
+            if(d.pitProbe().temperature().getRawTemp() != 999)
+                pitTemp.setText(String.valueOf(d.pitProbe().temperature().get()));
+            else
+                pitTemp.setText("ERR");
+
+            if(d.food1Probe().temperature().getRawTemp() != 999)
+                food1Temp.setText(String.valueOf(d.food1Probe().temperature().get()));
+            else
+                food1Temp.setText(getString(R.string.default_novalue));
+
+            if(d.food2Probe().temperature().getRawTemp() != 999)
+                food2Temp.setText(String.valueOf(d.food2Probe().temperature().get()));
+            else
+                food2Temp.setText(getString(R.string.default_novalue));
+
+
+            if(d.config().pitAlarmDeviation().getRawTemp() > 0)
+            {
+                pitAlarmLow.setText(String.valueOf(d.config().pitSet().get() - d.config().pitAlarmDeviation().get()));
+                pitAlarmHigh.setText(String.valueOf(d.config().pitSet().get() + d.config().pitAlarmDeviation().get()));
+            }
+            else
+            {
+                pitAlarmLow.setText(getString(R.string.default_novalue));
+                pitAlarmHigh.setText(getString(R.string.default_novalue));
+            }
+
+            if(d.config().food1AlarmTemp().getRawTemp() > 0)
+                food1Alarm.setText(String.valueOf(d.config().food1AlarmTemp().get()));
+            else
+                food1Alarm.setText(getString(R.string.default_novalue));
+
+            if(d.config().food2AlarmTemp().getRawTemp() > 0)
+                food2Alarm.setText(String.valueOf(d.config().food2AlarmTemp().get()));
+            else
+                food2Alarm.setText(getString(R.string.default_novalue));
+
+
+            if(d.config().food1Temp().getRawTemp() > 0 || d.config().food1PitSet().getRawTemp() > 0)
+            {
+                food1PitSet.setText(String.valueOf(d.config().food1PitSet().get()));
+                atFood1Temp.setText(String.valueOf(d.config().food1Temp().get()));
+            }
+            else
+            {
+                food1PitSet.setText(getString(R.string.default_novalue));
+                atFood1Temp.setText(getString(R.string.default_novalue));
+            }
+
+            if(d.config().food2Temp().getRawTemp() > 0 || d.config().food2PitSet().getRawTemp() > 0)
+            {
+                food2PitSet.setText(String.valueOf(d.config().food2PitSet().get()));
+                atFood2Temp.setText(String.valueOf(d.config().food2Temp().get()));
+            }
+            else
+            {
+                food2PitSet.setText(getString(R.string.default_novalue));
+                atFood2Temp.setText(getString(R.string.default_novalue));
+            }
+
+            if(d.config().delayPitSet().getRawTemp() > 0 || d.config().getDelayTime() > 0)
+            {
+                delayPitSet.setText(String.valueOf(d.config().delayPitSet().get()));
+
+                int minutes = d.config().getDelayTime() * 15;
+                minutes -= d.config().getMinutesPast();
+                int hours = minutes / 60;
+                minutes = (minutes - hours * 60) ;
+
+                if(minutes < 0)
+                    minutes = 0;
+
+                Formatter formatter = new Formatter();
+                String h = formatter.format("%02d", hours).toString();
+                formatter.close();
+
+                formatter = new Formatter();
+                String m = formatter.format("%02d", minutes).toString();
+                formatter.close();
+
+                delayTime.setText(h + ":" + m);
+            }
+            else
+            {
+                delayTime.setText(getString(R.string.default_novalue));
+                delayPitSet.setText(getString(R.string.default_novalue));
+            }
+
+
+            if (deviceManager.device().exceptions().hasException())
+            {
+                for(DeviceExceptions.Exception e : deviceManager.device().exceptions().get())
+                {
+                    switch(e)
+                    {
+                        case ENCLOSURE_HOT:
+                            deviceName.setText("ENCLOSURE HOT");
+                            deviceName.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case FOOD_1_PROBE_ERROR:
+                            food1Temp.setText("ERR");
+                            food1Temp.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case FOOD_2_PROBE_ERROR:
+                            food2Temp.setText("ERR");
+                            food2Temp.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case FOOD_1_DONE:
+                            food1Temp.setAnimation(Animations.getBlinkAnimation());
+                            deviceName.setText("Food 1 Done");
+                            deviceName.setAnimation(Animations.getPulseAnimation(1000));
+                            blinkRate = 250;
+                            break;
+                        case FOOD_2_DONE:
+                            food2Temp.setAnimation(Animations.getBlinkAnimation());
+                            deviceName.setText("Food 2 Done");
+                            deviceName.setAnimation(Animations.getPulseAnimation(1000));
+                            blinkRate = 250;
+                            break;
+                        case PIT_HOT:
+                            pitTemp.setAnimation(Animations.getBlinkAnimation());
+                            pitAlarmHigh.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case PIT_COLD:
+                            pitTemp.setAnimation(Animations.getBlinkAnimation());
+                            pitAlarmLow.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case LID_OFF:
+                            blinkRate = 250;
+                            break;
+                        case DELAY_PIT_SET:
+                            blinkRate = 250;
+                            break;
+                        case FOOD_1_TEMP_PIT_SET:
+                            blinkRate = 250;
+                            break;
+                        case FOOD_2_TEMP_PIT_SET:
+                            blinkRate = 250;
+                            break;
+                        case PIT_PROBE_ERROR:
+                            pitTemp.setText("ERR");
+                            pitTemp.setAnimation(Animations.getBlinkAnimation());
+                            blinkRate = 250;
+                            break;
+                        case CONNECTION_LOST:
+                            deviceName.setText("CONNECTION LOST");
+                            blinkRate = 500;
+                            break;
+                    }
+                }
+            }
+
+
+        }
+        else
+        {
+            deviceName.setText("Device Name");
+            food1ProbeName.setText(getString(R.string.default_novalue));
+            food2ProbeName.setText(getString(R.string.default_novalue));
+            pitSet.setText(getString(R.string.default_novalue));
+            pitTemp.setText(getString(R.string.default_novalue));
+            food1Temp.setText(getString(R.string.default_novalue));
+            food2Temp.setText(getString(R.string.default_novalue));
+            pitAlarmLow.setText(getString(R.string.default_novalue));
+            pitAlarmHigh.setText(getString(R.string.default_novalue));
+            food1Alarm.setText(getString(R.string.default_novalue));
+            food2Alarm.setText(getString(R.string.default_novalue));
+            delayPitSet.setText(getString(R.string.default_novalue));
+            delayTime.setText(getString(R.string.default_novalue));
+            food1PitSet.setText(getString(R.string.default_novalue));
+            food2PitSet.setText(getString(R.string.default_novalue));
+            atFood1Temp.setText(getString(R.string.default_novalue));
+            atFood2Temp.setText(getString(R.string.default_novalue));
+        }
+
+        updateStatusIcon(statusIcon, blinkRate);
     }
 }

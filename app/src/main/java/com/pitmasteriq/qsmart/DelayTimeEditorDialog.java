@@ -23,7 +23,7 @@ import java.util.Formatter;
  */
 public class DelayTimeEditorDialog extends DialogFragment
 {
-    private ParameterEditorDialog.ParameterEditorListener listener;
+    private ParameterEditedListener listener;
     private Intent intent;
 
     private int newTime = 0;
@@ -115,11 +115,11 @@ public class DelayTimeEditorDialog extends DialogFragment
 
                 if( checkValue() )
                 {
-                    listener.parameterChanged(Activity.RESULT_OK, intent);
+                    listener.onParameterChanged(new ParameterEditedEvent(Activity.RESULT_OK, intent));
                 }
                 else
                 {
-                    listener.parameterChanged(Activity.RESULT_CANCELED, intent);
+                    listener.onParameterChanged(new ParameterEditedEvent(Activity.RESULT_CANCELED, intent));
                 }
 
                 getDialog().dismiss();
@@ -176,7 +176,7 @@ public class DelayTimeEditorDialog extends DialogFragment
         super.onAttach(activity);
         try
         {
-            listener = (ParameterEditorDialog.ParameterEditorListener) activity;
+            listener = (ParameterEditedListener) activity;
         } catch (ClassCastException e)
         {
             throw new ClassCastException(activity.toString()

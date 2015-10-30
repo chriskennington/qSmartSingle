@@ -3,33 +3,43 @@ package com.pitmasteriq.qsmart;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.drawable.AnimationDrawable;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.idevicesinc.sweetblue.BleManager;
 import com.idevicesinc.sweetblue.BleManagerConfig;
 import com.idevicesinc.sweetblue.utils.Interval;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 
-public class BaseActivity extends Activity implements FragmentResponseListener
+public class BaseActivity extends Activity implements FragmentResponseListener, ParameterEditedListener
 {
     public static final String NOTIFICATION_CANCELED = "notification_canceled";
     public static final String NOTIFICATION_ACK = "notification_ack";
@@ -50,6 +60,13 @@ public class BaseActivity extends Activity implements FragmentResponseListener
     private BleManager bleManager;
     private static final UUID[] WHITELIST = new UUID[]{Uuid.SERVICE, Uuid.CONFIG_BASIC, Uuid.STATUS_BASIC, Uuid.PASSCODE};
 
+    private SharedPreferences userPrefs;
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor editor;
+
+    private ProgressDialog pd;
+    private boolean shuttingDown = false;
+
 
     private DeviceManager deviceManager;
 
@@ -68,6 +85,10 @@ public class BaseActivity extends Activity implements FragmentResponseListener
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        userPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        prefs = getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
+        editor = prefs.edit();
 
         BleManagerConfig config = new BleManagerConfig()
         {{
@@ -144,12 +165,22 @@ public class BaseActivity extends Activity implements FragmentResponseListener
             unbindService(serviceConnection);
             serviceBound = false;
         }
+
+        deviceManager.saveDevice();
+
+        if (shuttingDown)
+        {
+            bleManager = null;
+            deviceManager.clear();
+            deviceManager = null;
+        }
     }
 
     @Override
     protected void onPause()
     {
         super.onPause();
+        MyApplication.activityPaused();
         bleManager.onPause();
     }
 
@@ -157,7 +188,13 @@ public class BaseActivity extends Activity implements FragmentResponseListener
     protected void onResume()
     {
         super.onResume();
+        MyApplication.activityResumed();
         bleManager.onResume();
+
+        if(prefs.getBoolean(Preferences.NOTIFY_SOUNDING, false))
+        {
+            ExceptionManager.get(getApplicationContext()).cancelNotification(ExceptionManager.ALARM);
+        }
     }
 
     @Override
@@ -166,6 +203,8 @@ public class BaseActivity extends Activity implements FragmentResponseListener
         switch (e.type())
         {
             case FragmentResponseEvent.CONNECT_TO_ADDRESS:
+                showLoadingDialog();
+                deviceManager.newDevice(e.stringData());
                 service.connectToAddress(e.stringData());
                 break;
             case FragmentResponseEvent.APPLICATION_CLOSE:
@@ -174,11 +213,37 @@ public class BaseActivity extends Activity implements FragmentResponseListener
         }
     }
 
+    @Override
+    public void onParameterChanged(ParameterEditedEvent e)
+    {
+        if (e.resultCode == Activity.RESULT_OK)
+        {
+            int selector = e.data().getIntExtra("selector", -1);
+            int value = e.data().getIntExtra("value", -1);
+
+            service.updateConfigurationValue(selector, value);
+        }
+        else
+        {
+            int min = e.data().getIntExtra("min", -1);
+            int max = e.data().getIntExtra("max", -1);
+
+            String message = "";
+            if ( min != -1 && max != -1 )
+                message = "Min value: " + min + "\nMax value: " + max;
+
+            MessageDialog md = MessageDialog.newInstance("Value out of range", message);
+            md.show(getFragmentManager(), "dialog");
+        }
+    }
+
     private void shutdownApp()
     {
-        //TODO disconnect from device
+        shuttingDown = true;
 
-        //TODO stop service
+        service.disconnectFromDevice();
+        stopService(new Intent(this, BluetoothService.class));
+        finish();
     }
 
     private void showCustomActionBar()
@@ -196,7 +261,7 @@ public class BaseActivity extends Activity implements FragmentResponseListener
         scannerButton = (ImageView) v.findViewById(R.id.action_bar_scanner);
         AnimationDrawable ad = (AnimationDrawable) scannerButton.getDrawable();
         ad.stop();
-        ad.selectDrawable(2);
+        ad.selectDrawable(1);
 
         settingsButton = (ImageView) v.findViewById(R.id.action_bar_settings);
         infoButton = (ImageView) v.findViewById(R.id.action_bar_info);
@@ -225,9 +290,54 @@ public class BaseActivity extends Activity implements FragmentResponseListener
     private BluetoothService.ServiceListener serviceListener = new BluetoothService.ServiceListener()
     {
         @Override
+        public void connectFailed()
+        {
+            hideLoadingDialog();
+        }
+
+        @Override
+        public void connectSucceeded()
+        {
+            hideLoadingDialog();
+        }
+
+        @Override
+        public void disconnectFailed(){}
+
+        @Override
+        public void disconnectSucceeded(){}
+
+        @Override
+        public void passcodeAccepted()
+        {
+            hideLoadingDialog();
+            Toast.makeText(getApplicationContext(),"Device Connected", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
         public void passcodeDeclined()
         {
+            hideLoadingDialog();
 
+            MessageDialog md = MessageDialog.newInstance("Failed", "Device could not be connected to. This could be due to an incorrect passcode. The passcode can not be '0000'.");
+            md.show(getFragmentManager(), "dialog");
+        }
+
+        @Override
+        public void configChangeFailed(){}
+
+        @Override
+        public void configChangeSucceeded()
+        {
+            try
+            {
+                AssetFileDescriptor afd = getApplicationContext().getAssets().openFd("audio" + File.separator + "config_edit_success.mp3");
+                MediaPlayer player = new MediaPlayer();
+                player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+                player.prepare();
+                player.start();
+            }
+            catch(IOException e){e.printStackTrace();}
         }
     };
 
@@ -292,5 +402,139 @@ public class BaseActivity extends Activity implements FragmentResponseListener
         Fragment prevFrag = getFragmentManager().findFragmentByTag("dialog");
         if(prevFrag != null)
             ft.remove(prevFrag).commit();
+    }
+
+    public void openExceptions(View v)
+    {
+        if(deviceManager.device() != null)
+        {
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            removePreviousFragment(ft);
+
+            ExceptionFragment frag = new ExceptionFragment();
+            frag.show(ft, "dialog");
+        }
+    }
+
+    public void changeDeviceName(View v)
+    {
+        Toast.makeText(this, "changing name", Toast.LENGTH_SHORT).show();
+        openParameterDialog("Change Device Name", 0, TextEditorDialog.DEVICE_NAME);
+    }
+
+    public void changeProbe1Name(View v)
+    {
+        openParameterDialog("Change Food Probe 1 Name", 0, TextEditorDialog.FOOD1_NAME);
+    }
+
+    public void changeProbe2Name(View v)
+    {
+        openParameterDialog("Change Food Probe 2 Name", 0, TextEditorDialog.FOOD2_NAME);
+    }
+
+    public void changePitSet(View v)
+    {
+        openParameterDialog("Change Pit Set Temperature", deviceManager.device().config().pitSet().get(), DeviceConfig.CONFIG_PIT_SET);
+    }
+
+    public void changePitDeviation(View v)
+    {
+        openParameterDialog("Change Pit Temp Deviation", deviceManager.device().config().pitAlarmDeviation().get(), DeviceConfig.CONFIG_PIT_ALARM);
+    }
+
+    public void changeFood1Alarm(View v)
+    {
+        openParameterDialog("Change Food 1 Alarm Temp", deviceManager.device().config().food1AlarmTemp().get(), DeviceConfig.CONFIG_FOOD_1_ALARM);
+    }
+
+    public void changeFood2Alarm(View v)
+    {
+        openParameterDialog("Change Food 2 Alarm Temp", deviceManager.device().config().food2AlarmTemp().get(), DeviceConfig.CONFIG_FOOD_2_ALARM);
+    }
+
+    public void changeDelayPitSet(View v)
+    {
+        openParameterDialog("Change Delay Pit Set", deviceManager.device().config().delayPitSet().get(), DeviceConfig.CONFIG_DELAY_PIT_SET);
+    }
+
+    public void changeDelayTime(View v)
+    {
+        openParameterDialog("Change Delay Time", deviceManager.device().config().getDelayTime(), DeviceConfig.CONFIG_DELAY_TIME);
+    }
+
+    public void changeFood1PitSet(View v)
+    {
+        openParameterDialog("Change Food 1 Pit Set", deviceManager.device().config().food1PitSet().get(), DeviceConfig.CONFIG_FOOD_1_PIT_SET);
+    }
+
+    public void changeAtFood1Temp(View v)
+    {
+        openParameterDialog("Change Food 2 Pit Set", deviceManager.device().config().food2PitSet().get(), DeviceConfig.CONFIG_FOOD_2_PIT_SET);
+    }
+
+    public void changeFood2PitSet(View v)
+    {
+        openParameterDialog("Change Pit Set at Food 1 Temp", deviceManager.device().config().food1Temp().get(), DeviceConfig.CONFIG_FOOD_1_TEMP);
+    }
+
+    public void changeAtFood2Temp(View v)
+    {
+        openParameterDialog("Change Pit Set at Food 2 Temp", deviceManager.device().config().food2Temp().get(), DeviceConfig.CONFIG_FOOD_2_TEMP);
+    }
+
+    private void openParameterDialog(String title, int current, int selector)
+    {
+        if (deviceManager.device() == null)
+            return;
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        removePreviousFragment(ft);
+
+
+        DialogFragment edit = new ParameterEditorDialog();
+
+        if (selector == DeviceConfig.CONFIG_DELAY_TIME)
+            edit = new DelayTimeEditorDialog();
+
+        if (selector == TextEditorDialog.FOOD1_NAME ||
+                selector == TextEditorDialog.FOOD2_NAME ||
+                selector == TextEditorDialog.DEVICE_NAME)
+        {
+            edit = new TextEditorDialog();
+        }
+
+        Bundle args = new Bundle();
+        args.putString("title", title);
+        args.putInt("current", current);
+        args.putInt("selector", selector);
+
+        edit.setArguments(args);
+        edit.show(ft, "dialog");
+    }
+
+    private void showLoadingDialog()
+    {
+        pd = new ProgressDialog(this);
+        pd.setIndeterminate(true);
+        pd.setCancelable(true);
+        pd.setMessage("Attempting to connect to your device. Please wait up to 30 seconds");
+        pd.setOnCancelListener(new DialogInterface.OnCancelListener()
+        {
+            @Override
+            public void onCancel(DialogInterface dialog)
+            {
+                service.cancelConnectionAttempt();
+            }
+        });
+        pd.show();
+    }
+
+    private void hideLoadingDialog()
+    {
+        if(pd!=null)
+        {
+            pd.setOnCancelListener(null);
+            pd.cancel();
+        }
     }
 }

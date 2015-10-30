@@ -4,4 +4,6 @@
     <color name="Blue">#3883e8</color>
     <color name="Orange">#ffa200</color>
     <color name="White">#FFFFFF</color>
+
+    <color name="black_overlay">#66000000</color>
 </resources>

@@ -12,6 +12,7 @@ import org.acra.annotation.ReportsCrashes;
 public class MyApplication extends Application
 {
     private static Context context;
+    private static boolean activityVisible = false;
 
     @Override
     public void onCreate()
@@ -27,5 +28,17 @@ public class MyApplication extends Application
     public static Context getAppContext()
     {
         return context;
+    }
+
+    public static boolean isActivityVisible() {
+        return activityVisible;
+    }
+
+    public static void activityResumed() {
+        activityVisible = true;
+    }
+
+    public static void activityPaused() {
+        activityVisible = false;
     }
 }
