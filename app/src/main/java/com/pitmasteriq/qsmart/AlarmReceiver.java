@@ -2,13 +2,19 @@ package com.pitmasteriq.qsmart;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import java.util.HashSet;
 
 public class AlarmReceiver extends Activity
 {
@@ -16,13 +22,21 @@ public class AlarmReceiver extends Activity
     private PowerManager.WakeLock wl;
     private Handler handler = new Handler();
 
+    private ExceptionManager em;
+    private LinearLayout container;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alarm_receiver);
 
-        Log.e("TAG", "alarm");
+        container = (LinearLayout) findViewById(R.id.alarm_recv_exceptions_container);
+
+        //add list of exceptions to interface
+        addExceptions();
+
+        em = ExceptionManager.get(getApplicationContext());
 
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "alarmReceiver");
@@ -40,9 +54,20 @@ public class AlarmReceiver extends Activity
         super.onStart();
         active = true;
 
-        ExceptionManager.get(getApplicationContext()).startAlarm();
+        handler.postDelayed(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                em.startAlarm();
+            }
+        }, 500);
+
+
         handler.postDelayed(stopAlarm, BluetoothService.ALARM_WAIT_TIME);
     }
+
+
 
     @Override
     protected void onStop()
@@ -53,7 +78,7 @@ public class AlarmReceiver extends Activity
         if (wl.isHeld())
             wl.release();
 
-        ExceptionManager.get(getApplicationContext()).stopAlarm();
+        em.stopAlarm();
     }
 
     @Override
@@ -62,11 +87,35 @@ public class AlarmReceiver extends Activity
         super.onResume();
     }
 
-    public void silence(View v)
+    private void addExceptions()
+    {
+        try
+        {
+            HashSet<DeviceExceptions.Exception> exceptions = DeviceManager.get(getApplicationContext()).device().exceptions().get();
+
+            if(exceptions.size() > 0)
+            {
+                for(DeviceExceptions.Exception e : exceptions)
+                {
+                    TextView temp = new TextView(this);
+                    temp.setTextSize(20);
+                    temp.setGravity(Gravity.CENTER_HORIZONTAL);
+                    temp.setText(e.name().replace("_", " "));
+                    temp.setTextColor(Color.WHITE);
+
+                    container.addView(temp);
+                }
+            }
+        } catch (NullPointerException e)
+        {
+            Log.e("tag", "Cound not add exceptions due to null pointer");
+        }
+    }
+
+    public void close(View v)
     {
         finish();
     }
-
 
     private Runnable stopAlarm = new Runnable()
     {

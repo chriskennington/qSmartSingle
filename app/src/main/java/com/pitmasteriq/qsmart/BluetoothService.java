@@ -441,7 +441,10 @@ public class BluetoothService extends Service
         public void onEvent(ReadWriteEvent e)
         {
             if (e.data().length == 20)
+            {
+                editor.putLong(Preferences.LAST_UPDATE_TIME, System.currentTimeMillis());
                 new BackgroundThread(new ParseDataRunnable(e.device(), e.data())).start();
+            }
         }
     }
 
@@ -591,6 +594,14 @@ public class BluetoothService extends Service
                 {
                     exceptionManager.sendExceptionNotification();
                 }
+            }
+
+            //check if we have not received an update in the last 5 minutes
+            long lastUpdate = prefs.getLong(Preferences.LAST_UPDATE_TIME, -1);
+            if (lastUpdate != -1 && (System.currentTimeMillis() - lastUpdate) > 300000)
+            {
+                if (deviceManager.device() != null)
+                    deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
             }
 
             //check for disconnect error

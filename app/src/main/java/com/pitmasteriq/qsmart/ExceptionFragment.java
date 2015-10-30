@@ -88,7 +88,7 @@ public class ExceptionFragment extends DialogFragment
             {
                 Log.i("ADD FLAG", "ADDING FLAG TO FRAGMENT");
                 CheckBox temp = new CheckBox(context);
-                temp.setText( e.name() );
+                temp.setText( e.name().replace("_", " ") );
                 checkboxes.add(temp);
                 temp.setTextColor(Color.WHITE);
                 map.put(temp, e);
@@ -120,7 +120,7 @@ public class ExceptionFragment extends DialogFragment
             for (DeviceExceptions.Exception e : exceptions)
             {
                 TextView temp = new TextView(context);
-                temp.setText(e.name());
+                temp.setText(e.name().replace("_", " "));
                 temp.setTextColor(Color.WHITE);
                 layout.addView(temp);
             }

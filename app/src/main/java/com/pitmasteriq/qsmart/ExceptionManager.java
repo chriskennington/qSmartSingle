@@ -74,40 +74,31 @@ public class ExceptionManager
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString()) );
 
         mp = MediaPlayer.create(context, sound);
-
-        if (mp == null)
-            return false;
-
         mp.start();
 
         alarmSounding = true;
 
         //set the value in preferences to true
         context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, true).commit();
-
-
-        //send notification as well as alarm
-        sendExceptionNotification();
-
         return true;
     }
 
     public boolean stopAlarm()
     {
-        if (mp == null)
-            return false;
-
-        if( mp.isPlaying() )
+        try
         {
-            mp.stop();
-            mp.release();
-            //set the value in preferences to true
-            context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, false)
-                    .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + BluetoothService.ALARM_WAIT_TIME).commit();
+            if( mp != null && mp.isPlaying() )
+            {
+                mp.stop();
+                mp.release();
+                //set the value in preferences to true
+                context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, false)
+                        .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + BluetoothService.ALARM_WAIT_TIME).commit();
 
-            alarmSounding = false;
-            return true;
-        }
+                alarmSounding = false;
+                return true;
+            }
+        } catch(Exception e){}
 
         return false;
     }

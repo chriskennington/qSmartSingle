@@ -100,9 +100,9 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
             }};
 
         bleManager = BleManager.get(getApplicationContext(), config);
-
-
         deviceManager = DeviceManager.get(getApplicationContext());
+
+        checkForFirstLaunch();
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter
@@ -266,6 +266,32 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
         settingsButton = (ImageView) v.findViewById(R.id.action_bar_settings);
         infoButton = (ImageView) v.findViewById(R.id.action_bar_info);
         actionBarTitle = (TextView) v.findViewById(R.id.action_bar_title);
+    }
+
+    /**
+     * Checks if the application is new to the phone (never opened)
+     * @return
+     */
+    private boolean checkForFirstLaunch()
+    {
+        if( prefs.getBoolean(Preferences.FIRST_LAUNCH, true) )
+        {
+            //set important default preferences
+            editor.putBoolean(Preferences.FIRST_LAUNCH, false).apply();
+            editor.commit();
+
+            //MessageDialog md1 = MessageDialog.newInstance("test", "test", "ok");
+            //md1.show(getFragmentManager(), "dialog");
+
+            MessageDialog md = MessageDialog.newInstance("Disclaimer", "Read all safety warnings in the IQ130 Setup and Operating Instructions Manual.  Never leave a charcoal fire unattended!", "Agree");
+            md.show(getFragmentManager(), "dialog");
+
+            Toast.makeText(this, "first launch", Toast.LENGTH_LONG).show();
+
+            return true;
+        }
+
+        return false;
     }
 
     private ServiceConnection serviceConnection = new ServiceConnection()

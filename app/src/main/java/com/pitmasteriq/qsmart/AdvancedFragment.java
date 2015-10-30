@@ -167,8 +167,8 @@ public class AdvancedFragment extends BaseFragment
 
             if(d.config().pitAlarmDeviation().getRawTemp() > 0)
             {
-                pitAlarmLow.setText(String.valueOf(d.config().pitSet().get() - d.config().pitAlarmDeviation().get()));
-                pitAlarmHigh.setText(String.valueOf(d.config().pitSet().get() + d.config().pitAlarmDeviation().get()));
+                pitAlarmLow.setText(String.valueOf(d.config().pitSet().get() - d.config().pitAlarmDeviation().getRelative()));
+                pitAlarmHigh.setText(String.valueOf(d.config().pitSet().get() + d.config().pitAlarmDeviation().getRelative()));
             }
             else
             {

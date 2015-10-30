@@ -20,6 +20,7 @@ public class Preferences
     public static final String RECONNECT_ADDRESS = "reconnect_address";
     public static final String RECONNECT_ATTEMPTS = "reconnect_attempts";
     public static final String CONNECTION_LOST_TIME = "connection_lost_time";
+    public static final String LAST_UPDATE_TIME = "last_update_time";
 
     public static final String ALARM_SOUNDING = "alarm_sounding";
     public static final String ALARM_NEXT_TIME = "alarm_next_time";
