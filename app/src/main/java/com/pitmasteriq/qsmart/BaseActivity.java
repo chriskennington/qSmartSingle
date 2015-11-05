@@ -204,7 +204,6 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
         {
             case FragmentResponseEvent.CONNECT_TO_ADDRESS:
                 showLoadingDialog();
-                deviceManager.newDevice(e.stringData());
                 service.connectToAddress(e.stringData());
                 break;
             case FragmentResponseEvent.APPLICATION_CLOSE:

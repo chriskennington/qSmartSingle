@@ -51,7 +51,4 @@
             android:defaultValue = "0000"/>
 
     </PreferenceCategory>
-
-
-
 </PreferenceScreen>

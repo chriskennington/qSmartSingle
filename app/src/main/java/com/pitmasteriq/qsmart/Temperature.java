@@ -40,12 +40,12 @@ public class Temperature
             return temp;
     }
 
-    private int f2c(int f)
+    public static int f2c(int f)
     {
         return (int) ((f-32) * (5.0/9.0));
     }
 
-    private int c2f(int c)
+    public static int c2f(int c)
     {
         return (int)(c * 1.8 +32);
     }

@@ -44,7 +44,8 @@
 
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings" >
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".BaseActivity" >
         </activity>
 
         <receiver
@@ -58,9 +59,19 @@
 
         <activity
             android:name=".BaseActivity"
-            android:label="@string/title_activity_base">
+            android:label="@string/title_activity_base" >
         </activity>
         <activity android:name=".AlarmReceiver" >
+        </activity>
+        <activity
+            android:name=".export.ExportDataActivity"
+            android:label="@string/title_activity_export_data"
+            android:parentActivityName=".BaseActivity"
+            android:theme="@style/AppThemeCompat" >
+        </activity>
+
+        <activity android:name=".export.GraphActivity"
+            android:screenOrientation="landscape">
         </activity>
     </application>
 

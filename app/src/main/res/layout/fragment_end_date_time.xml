@@ -1,0 +1,60 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              tools:context="com.pitmasteriq.qsmart.export.StartDateTimeFragment"
+              android:orientation="vertical"
+              android:weightSum="1"
+              android:background="@drawable/monitor_background">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight=".5"
+        android:background="@color/black_200A"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="2.5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select end date and time"
+            android:id="@+id/textView17"
+            android:textSize="25sp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/Red"/>
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/export_end_date"
+            android:hint="End Date (tap to set)"
+            android:editable="false"
+            android:gravity="center"
+            android:enabled="true"
+            android:clickable="true"
+            android:textSize="30sp"
+            android:layout_below="@+id/textView17"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="25dp"
+            android:layout_alignParentStart="false"/>
+
+        <TimePicker
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/export_end_time"
+            android:layout_below="@+id/export_end_date"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="25dp"
+            android:headerBackground="@color/Orange"
+            android:numbersTextColor="@color/White"
+            android:theme="@style/AppTheme"/>
+
+    </RelativeLayout>
+</LinearLayout>

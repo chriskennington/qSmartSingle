@@ -29,9 +29,6 @@
 
     <string name="version_0.1.1_notes">Bug fixes Added blower power in advanced view</string>
 
-
-
-
     <string-array name="listColors">
         <item>Blue</item>
         <item>Green</item>
@@ -47,14 +44,16 @@
         <item>#ffff00ff</item>
         <item>#ff00ffff</item>
     </string-array>
+
+    <string-array name="exportValues">
+        <item>Pit Set</item>
+        <item>Pit Temp</item>
+        <item>Food 1 Temp</item>
+        <item>Food 2 Temp</item>
+    </string-array>
+
     <string name="title_activity_base">BaseActivity</string>
-    <string name="section_format">Hello World from section: %1$d</string>
-
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
-    <string name="title_activity_fullscreen">FullscreenActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_export_data">Export Data</string>
 
 </resources>

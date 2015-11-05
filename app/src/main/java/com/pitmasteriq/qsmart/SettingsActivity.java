@@ -1,5 +1,7 @@
 package com.pitmasteriq.qsmart;
 
+import android.app.ActionBar;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.os.Bundle;
@@ -9,6 +11,12 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.pitmasteriq.qsmart.export.ExportDataActivity;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -28,7 +36,19 @@ public class SettingsActivity extends PreferenceActivity
     {
         super.onCreate(savedInstanceState);
 
+        setupActionBar();
+
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
+    }
+
+    private void setupActionBar()
+    {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null)
+        {
+            // Show the Up button in the action bar.
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     public static class SettingsFragment extends PreferenceFragment
@@ -74,8 +94,17 @@ public class SettingsActivity extends PreferenceActivity
                     return true;
                 }
             });
-
         }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+        {
+            super.onCreateView(inflater, container, savedInstanceState);
+            View v = inflater.inflate(R.layout.fragment_preferences, container, false);
+            return v;
+        }
+
+
 
         @Override
         public void onResume()
@@ -93,5 +122,11 @@ public class SettingsActivity extends PreferenceActivity
 
             passcode.setText(code);
         }
+    }
+
+    public void onExportDataClick(View v)
+    {
+        Log.e("TAG", "exporting data");
+        startActivity(new Intent(this, ExportDataActivity.class));
     }
 }

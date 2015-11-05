@@ -53,6 +53,9 @@ public class BluetoothService extends Service
     private Handler handler = new Handler();
     private UpdateThread updateThread;
 
+    private DataSource dataSource;
+    private SaveDataThread saveThread;
+
     public BluetoothService()
     {
     }
@@ -67,10 +70,14 @@ public class BluetoothService extends Service
         deviceManager = DeviceManager.get(getApplicationContext());
         exceptionManager = ExceptionManager.get(getApplicationContext());
 
+        //access to database
+        dataSource = new DataSource(getApplicationContext());
+
         prefs = getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
         editor = prefs.edit();
 
         updateThread = new UpdateThread(handler, new UpdateRunnable(), UPDATE_INTERVAL);
+        saveThread = new SaveDataThread();
     }
 
 
@@ -82,6 +89,9 @@ public class BluetoothService extends Service
 
         startForeground(1, exceptionManager.getServiceNotification());
 
+        if (!saveThread.isAlive())
+            saveThread.start();
+
         return START_STICKY;
     }
 
@@ -92,12 +102,17 @@ public class BluetoothService extends Service
         return binder;
     }
 
+
+
     @Override
     public void onDestroy()
     {
         super.onDestroy();
 
         updateThread.setRunning(false);
+        saveThread.setRunning(false);
+
+        handler.removeCallbacksAndMessages(null);
 
         stopForeground(true);
     }
@@ -179,6 +194,9 @@ public class BluetoothService extends Service
 
     public void connectToAddress(String address)
     {
+        if (connectedDevice != null)
+            disconnectFromDevice();
+
         for (BleDevice d : bleManager.getDevices_List())
             if (d.getMacAddress().equals(address))
             {
@@ -366,6 +384,7 @@ public class BluetoothService extends Service
         connectingDevice = null;
         reconnectDevice = null;
 
+        deviceManager.newDevice(connectedDevice.getMacAddress());
         connectedDevice.enableNotify(Uuid.STATUS_BASIC, new DataListener());
         deviceManager.device().setStatus(Device.Status.OK);
 
@@ -419,7 +438,6 @@ public class BluetoothService extends Service
                 {
                     listener.disconnectSucceeded();
                     connectedDevice = null;
-
                     deviceManager.device().setStatus(Device.Status.Disconnected);
                 }
                 else
@@ -576,6 +594,32 @@ public class BluetoothService extends Service
             bb.put(i);
             return bb.getShort(0);
         }
+    }
+
+    private class SaveDataThread extends Thread
+    {
+        private boolean isRunning = true;
+        @Override
+        public void run()
+        {
+            while (isRunning)
+            {
+                if (deviceManager.device() != null)
+                {
+                    Log.e("TAG", "saving data");
+                    dataSource.open();
+                    dataSource.storeDataString();
+                    dataSource.close();
+                }
+
+                try
+                {
+                    sleep(60000);
+                } catch (InterruptedException e){}
+            }
+        }
+
+        public void setRunning(boolean running){isRunning = running;}
     }
 
     private class UpdateRunnable implements Runnable
