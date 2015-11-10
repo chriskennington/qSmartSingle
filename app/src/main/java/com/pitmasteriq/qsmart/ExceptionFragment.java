@@ -52,6 +52,7 @@ public class ExceptionFragment extends DialogFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState)
     {
         // Inflate the layout for this fragment
+        super.onCreateView(inflater, container, savedInstanceState);
         View v = inflater.inflate(R.layout.fragment_exception, container, false);
 
         dialog = this.getDialog();

@@ -22,7 +22,6 @@ import java.util.List;
 
 public class StartDateTimeFragment extends Fragment
 {
-
     private DataSource dataSource;
     private List<DataModel> data;
 
@@ -38,8 +37,16 @@ public class StartDateTimeFragment extends Fragment
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState)
     {
+        super.onCreateView(inflater, container, savedInstanceState);
         View v = inflater.inflate(R.layout.fragment_date_time, container, false);
 
         startDate = (TextView)v.findViewById(R.id.export_start_date);
@@ -64,7 +71,11 @@ public class StartDateTimeFragment extends Fragment
         return v;
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+    }
 
     private void openDatePickerFragment(int selector)
     {

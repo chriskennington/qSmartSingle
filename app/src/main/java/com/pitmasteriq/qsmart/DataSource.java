@@ -69,8 +69,6 @@ public class DataSource
 
         Cursor cursor = database.rawQuery(query, null);
 
-        Log.e("tag", "number of rows " + cursor.getCount());
-
         cursor.moveToFirst();
         while (!cursor.isAfterLast())
         {
@@ -93,8 +91,6 @@ public class DataSource
                 + " ORDER BY " + DatabaseHelper.COL_DATE + " DESC";
 
         Cursor cursor = database.rawQuery(query, null);
-
-        Log.e("tag", "number of rows " + cursor.getCount());
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast())

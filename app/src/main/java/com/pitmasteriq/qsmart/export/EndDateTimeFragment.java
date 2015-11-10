@@ -40,6 +40,7 @@ public class EndDateTimeFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState)
     {
+        super.onCreateView(inflater, container, savedInstanceState);
         View v = inflater.inflate(R.layout.fragment_end_date_time, container, false);
 
         endDate = (TextView)v.findViewById(R.id.export_end_date);

@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.pitmasteriq.qsmart.DataModel;
 import com.pitmasteriq.qsmart.DataSource;
 import com.pitmasteriq.qsmart.DatePickedListener;
+import com.pitmasteriq.qsmart.MessageDialog;
 import com.pitmasteriq.qsmart.MyApplication;
 import com.pitmasteriq.qsmart.Preferences;
 import com.pitmasteriq.qsmart.R;
@@ -106,6 +107,8 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
         }
     }
 
+
+
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction)
     {
@@ -176,13 +179,12 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
 
     public void graphData(View v)
     {
-        if (startDateTimeFragment.getDate().length() == 0)
-            return;
-
-        if (endDateTimeFragment.getDate().length() == 0)
-            return;
-
         columns = columnsFragment.getCheckboxes();
+
+        //if we cant export the data, end attempt
+        if (!canExportData())
+            return;
+
         boolean[] values = new boolean[columns.size()];
 
         for (CheckBox c : columns)
@@ -203,13 +205,12 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
 
     public void exportData(View v)
     {
-        if (startDateTimeFragment.getDate().length() == 0)
-            return;
-
-        if (endDateTimeFragment.getDate().length() == 0)
-            return;
-
         columns = columnsFragment.getCheckboxes();
+
+        //if we cant export the data, end attempt
+        if (!canExportData())
+            return;
+
         refreshData(startDateTimeFragment.getDateTime(), endDateTimeFragment.getDateTime());
 
         File outputFile = getOutputFile();
@@ -338,6 +339,43 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
         dataSource.open();
         data = dataSource.getDataInRange(start, end);
         dataSource.close();
+    }
+
+    private boolean hasSelectedValues()
+    {
+        for (CheckBox c : columns)
+            if (c.isChecked())
+                return true;
+
+        return false;
+    }
+
+    private boolean canExportData()
+    {
+        if (startDateTimeFragment.getDate().length() == 0)
+        {
+            MessageDialog md = MessageDialog.newInstance("Export Failed", "Please select a starting date");
+            md.show(getFragmentManager(), "dialog");
+            mViewPager.setCurrentItem(0, true);
+            return false;
+        }
+
+        if (endDateTimeFragment.getDate().length() == 0)
+        {
+            MessageDialog md = MessageDialog.newInstance("Export Failed", "Please select an ending date");
+            md.show(getFragmentManager(), "dialog");
+            mViewPager.setCurrentItem(1, true);
+            return false;
+        }
+
+        if (!hasSelectedValues())
+        {
+            MessageDialog md = MessageDialog.newInstance("Export Failed", "Please select values to export");
+            md.show(getFragmentManager(), "dialog");
+            return false;
+        }
+
+        return true;
     }
 
 
