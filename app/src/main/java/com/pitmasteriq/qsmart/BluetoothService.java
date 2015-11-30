@@ -40,9 +40,9 @@ public class BluetoothService extends Service
 
     private BleManager bleManager;
 
-    private BleDevice connectingDevice; //device currently attempting connection
-    private BleDevice connectedDevice; //currently connected device
-    private BleDevice reconnectDevice; //device to reconnect to when back in range
+    private BleDevice connectingDevice = null; //device currently attempting connection
+    private BleDevice connectedDevice = null; //currently connected device
+    private BleDevice reconnectDevice = null; //device to reconnect to when back in range
 
     private DeviceManager deviceManager;
     private ExceptionManager exceptionManager;
@@ -275,10 +275,9 @@ public class BluetoothService extends Service
 
     private void startConnection()
     {
-
         connectingDevice.setConfig(new BleDeviceConfig()
         {{
-                //TODO Uncomment to turn off auto reconnect feature
+                //TODO comment to turn on auto reconnect feature
                 this.reconnectRequestFilter_longTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
                 this.reconnectRequestFilter_shortTerm = new DefaultReconnectRequestFilter(Interval.DISABLED);
                 this.reconnectPersistFilter_longTerm = new DefaultReconnectPersistFilter(Interval.DISABLED);
@@ -329,9 +328,7 @@ public class BluetoothService extends Service
                             try
                             {
                                 Thread.sleep(3000);
-                            } catch (InterruptedException e)
-                            {
-                            }
+                            } catch (InterruptedException e){}
 
                             Log.i("TAG", "checking passcode validity");
                             checkPasscodeValidity();
@@ -352,9 +349,6 @@ public class BluetoothService extends Service
             @Override
             public void onEvent(ReadWriteEvent e)
             {
-                for (int i = 0; i < 20; i++)
-                    Log.e("TAG", "" + e.data()[i]);
-
                 if (e.data()[19] == 1) //bad passcode response
                 {
                     badPasscodeResponse();
@@ -460,7 +454,12 @@ public class BluetoothService extends Service
         {
             if (e.data().length == 20)
             {
-                editor.putLong(Preferences.LAST_UPDATE_TIME, System.currentTimeMillis());
+                //everytime new data is received remove connection lost exception, just in case.
+                deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.CONNECTION_LOST);
+                deviceManager.device().setStatus(Device.Status.OK);
+                reconnectDevice = null;
+
+                editor.putLong(Preferences.LAST_UPDATE_TIME, System.currentTimeMillis()).commit();
                 new BackgroundThread(new ParseDataRunnable(e.device(), e.data())).start();
             }
         }
@@ -480,81 +479,74 @@ public class BluetoothService extends Service
         @Override
         public void run()
         {
-            if (data.length == 20)
+            short value = 0;
+            List<Short> values = new ArrayList<>();
+
+            values.add((short) data[0]);
+            values.add((short) data[1]);
+
+            value = bytesToShort((byte) 0, data[2]);
+            values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
+
+            values.add(bytesToShort(data[3], data[4]));
+            values.add(bytesToShort(data[5], data[6]));
+            values.add(bytesToShort(data[7], data[8]));
+
+            value = bytesToShort((byte) 0, data[10]);
+            values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
+
+            values.add(bytesToShort((byte) 0, data[11]));
+            values.add(bytesToShort((byte) 0, data[12]));
+            values.add((short) data[13]);
+            values.add(bytesToShort((byte) 0, data[16]));
+
+            value = bytesToShort((byte) 0, data[17]);
+            values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
+
+            values.add(bytesToShort((byte) 0, data[18]));
+
+            value = bytesToShort((byte) 0, data[19]);
+            values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
+
+            values.add(getHighBits((short)data[9]));
+
+            //convert two byte flag bit fields into short
+
+            short flagBits = bytesToShort(data[14], data[15]);
+            //convert short into boolean array by converting each bit in the
+            //short from a 1 to true and 0 to false
+            boolean bits[] = new boolean[NUMBER_OF_ALARM_BITS];
+
+            String flagHash = "";
+            for (int i = NUMBER_OF_ALARM_BITS - 1; i >= 0; i--)
             {
-                short value = 0;
-                List<Short> values
+                flagHash += (flagBits & (1 << i));
+                bits[i] = (flagBits & (1 << i)) != 0;
+            }
 
-                        = new ArrayList<>();
+            if(deviceManager.device() != null)
+            {
+                //TODO If flag bits have changed, do something
+                if (deviceManager.device().exceptions().compareHash(flagHash) == false)
+                    handleFlagBits(bits);
 
-                values.add((short) data[0]);
-                values.add((short) data[1]);
+                if (values.get(3) == 999)
+                    deviceManager.device().exceptions().addException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
+                else
+                    deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
+            }
 
-                value = bytesToShort((byte) 0, data[2]);
-                values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
+            //UPDATE DEVICE VALUES
+            if (!deviceManager.updateValues(values))
+            {
+                //TODO does something need to be done here?
+                //for some reason the device is null.
+            }
 
-                values.add(bytesToShort(data[3], data[4]));
-                values.add(bytesToShort(data[5], data[6]));
-                values.add(bytesToShort(data[7], data[8]));
-
-                value = bytesToShort((byte) 0, data[10]);
-                values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
-
-                values.add(bytesToShort((byte) 0, data[11]));
-                values.add(bytesToShort((byte) 0, data[12]));
-                values.add((short) data[13]);
-                values.add(bytesToShort((byte) 0, data[16]));
-
-                value = bytesToShort((byte) 0, data[17]);
-                values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
-
-                values.add(bytesToShort((byte) 0, data[18]));
-
-                value = bytesToShort((byte) 0, data[19]);
-                values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
-
-                values.add(getHighBits((short)data[9]));
-
-                //convert two byte flag bit fields into short
-
-                short flagBits = bytesToShort(data[14], data[15]);
-                //convert short into boolean array by converting each bit in the
-                //short from a 1 to true and 0 to false
-                boolean bits[] = new boolean[NUMBER_OF_ALARM_BITS];
-
-                String flagHash = "";
-                for (int i = NUMBER_OF_ALARM_BITS - 1; i >= 0; i--)
-                {
-                    flagHash += (flagBits & (1 << i));
-                    bits[i] = (flagBits & (1 << i)) != 0;
-                }
-
-
-
-                if(deviceManager.device() != null)
-                {
-                    //TODO If flag bits have changed, do something
-                    if (deviceManager.device().exceptions().compareHash(flagHash) == false)
-                        handleFlagBits(bits);
-
-                    if (values.get(3) == 999)
-                        deviceManager.device().exceptions().addException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
-                    else
-                        deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
-                }
-
-                //UPDATE DEVICE VALUES
-                if (!deviceManager.updateValues(values))
-                {
-                    //TODO does something need to be done here?
-                    //for some reason the device is null.
-                }
-
-                //if screen is off, save to file.
-                if (!MyApplication.isActivityVisible())
-                {
-                    deviceManager.saveDevice();
-                }
+            //if screen is off, save to file.
+            if (!MyApplication.isActivityVisible())
+            {
+                deviceManager.saveDevice();
             }
         }
 
@@ -627,28 +619,36 @@ public class BluetoothService extends Service
         @Override
         public void run()
         {
-            if(deviceManager.device() != null)
+
+            //check for exceptions and send appropriate alarms or notifications
+            if(deviceManager.device() != null)  //make sure we actually have a device to use
             {
-                if (deviceManager.device().exceptions().hasAlarm())
+                if (deviceManager.device().exceptions().hasAlarm()) //device has an alarm flag
                 {
-                    if (exceptionManager.canStartAlarm())
-                        setAlarm();
+                    if (exceptionManager.canStartAlarm())   //check alarm is not already sounding
+                        setAlarm();                         //send alarm
                 }
-                else if (deviceManager.device().exceptions().hasNotify())
+                else if (deviceManager.device().exceptions().hasNotify()) //no alarm, check for notification flags
                 {
-                    exceptionManager.sendExceptionNotification();
+                    exceptionManager.sendExceptionNotification(); //send a notification
                 }
             }
 
             //check if we have not received an update in the last 5 minutes
+            //If no update to status basic has been received in 5 minutes we can safely assume
+            //that the connection to the device is lost
             long lastUpdate = prefs.getLong(Preferences.LAST_UPDATE_TIME, -1);
             if (lastUpdate != -1 && (System.currentTimeMillis() - lastUpdate) > 300000)
             {
                 if (deviceManager.device() != null)
+                {
+                    Log.i("TAG", "Connection lost due to not receiving updates to characteristic");
                     deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
+                }
             }
 
-            //check for disconnect error
+            //check to see if we need to send the connection lost alarm
+            //If the connection has been lost for 10 seconds we can add the connection lost exception
             if (reconnectDevice != null)
             {
                 long lostTime = prefs.getLong(Preferences.CONNECTION_LOST_TIME, -1);
@@ -657,8 +657,16 @@ public class BluetoothService extends Service
                     return;
 
                 if (System.currentTimeMillis() - lostTime > (10000))
+                {
                     if (deviceManager.device() != null)
+                    {
+                        Log.i("TAG", "connection lost for more than 10 seconds");
                         deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
+
+                        //reset connection lost time
+                        editor.putLong(Preferences.CONNECTION_LOST_TIME, -1).commit();
+                    }
+                }
             }
         }
     }

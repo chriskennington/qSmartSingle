@@ -7,6 +7,7 @@ public class DataModel
 {
     private long id;
     private long date;
+    private String address;
     private int pitSet;
     private int pitTemp;
     private int food1Temp;
@@ -17,6 +18,9 @@ public class DataModel
 
     public long getDate() {return date;}
     public void setDate(long date) {this.date = date;}
+
+    public String getAddress() {return address;}
+    public void setAddress(String address){this.address = address;}
 
     public int getFood1Temp(){return food1Temp;}
     public void setFood1Temp(int food1Temp) {this.food1Temp = food1Temp;}

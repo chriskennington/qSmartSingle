@@ -32,6 +32,7 @@ public class GraphActivity extends Activity
 {
     private LinearLayout chartLyt;
     private long startTime, endTime;
+    String address;
     private boolean[] valuesToGraph;
 
     private String[] dataTitles;
@@ -48,9 +49,11 @@ public class GraphActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph);
 
+
         dataTitles = getResources().getStringArray(R.array.exportValues);
         startTime = getIntent().getLongExtra("startTime", -1);
         endTime = getIntent().getLongExtra("endTime", -1);
+        address = getIntent().getStringExtra("address");
 
         dataSource = new DataSource(getApplicationContext());
         loadData();
@@ -153,7 +156,7 @@ public class GraphActivity extends Activity
     private void loadData()
     {
         dataSource.open();
-        data = dataSource.getDataInRange(startTime, endTime);
+        data = dataSource.getDataInRange(address, startTime, endTime);
         dataSource.close();
     }
 

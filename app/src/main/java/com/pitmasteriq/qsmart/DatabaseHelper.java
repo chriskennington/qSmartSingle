@@ -27,6 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
             + TABLE_DATA + "("
             + COL_ID + " integer primary key autoincrement, "
             + COL_DATE + " integer not null, "
+            + COL_ADDR + " text, "
             + COL_PIT_SET + " integer, "
             + COL_PIT_TEMP + " integer, "
             + COL_FOOD1_TEMP + " integer, "

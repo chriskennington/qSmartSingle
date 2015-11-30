@@ -31,7 +31,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ExportDataActivity extends ActionBarActivity implements ActionBar.TabListener, DatePickedListener
 {
@@ -40,6 +42,7 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
 
+    private SelectDeviceFragment selectDeviceFragment;
     private StartDateTimeFragment startDateTimeFragment;
     private EndDateTimeFragment endDateTimeFragment;
     private ColumnsFragment columnsFragment;
@@ -49,6 +52,7 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
     private DataSource dataSource;
     private List<DataModel> data;
     private String[]  dataTitles;
+    private Set<String> addresses = new HashSet<>();
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     private SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
@@ -61,12 +65,14 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
 
         dataTitles = getResources().getStringArray(R.array.exportValues);
 
+        selectDeviceFragment = SelectDeviceFragment.newInstance();
         startDateTimeFragment = StartDateTimeFragment.newInstance();
         endDateTimeFragment = EndDateTimeFragment.newInstance();
         columnsFragment = ColumnsFragment.newInstance();
 
         dataSource = new DataSource(getApplicationContext());
         refreshData();
+        getListOfAddresses();
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -143,14 +149,32 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
         @Override
         public Fragment getItem(int position)
         {
-            switch (position)
+            if (addresses.size() > 1) // if we only have one IQ in the database dont make show
+            //the user the select device fragment
             {
-                case 0:
-                    return startDateTimeFragment;
-                case 1:
-                    return endDateTimeFragment;
-                case 2:
-                    return columnsFragment;
+                switch (position)
+                {
+                    case 0:
+                        return selectDeviceFragment;
+                    case 1:
+                        return startDateTimeFragment;
+                    case 2:
+                        return endDateTimeFragment;
+                    case 3:
+                        return columnsFragment;
+                }
+            }
+            else
+            {
+                switch (position)
+                {
+                    case 0:
+                        return startDateTimeFragment;
+                    case 1:
+                        return endDateTimeFragment;
+                    case 2:
+                        return columnsFragment;
+                }
             }
             return null;
         }
@@ -158,7 +182,10 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
         @Override
         public int getCount()
         {
-            return 3;
+            if (addresses.size() > 1)
+                return 4;
+            else
+                return 3;
         }
 
         @Override
@@ -167,10 +194,12 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
             switch (position)
             {
                 case 0:
-                    return "Start Date/Time";
+                    return "Select IQ";
                 case 1:
-                    return "End Date/Time";
+                    return "Start Date/Time";
                 case 2:
+                    return "End Date/Time";
+                case 3:
                     return "Values";
             }
             return null;
@@ -196,6 +225,10 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
         }
 
         Intent i = new Intent(this, GraphActivity.class);
+        if (addresses.size() > 1)
+            i.putExtra("address", selectDeviceFragment.getSelectedAddress());
+        else
+            i.putExtra("address", (String) addresses.toArray()[0]);
         i.putExtra("startTime", startDateTimeFragment.getDateTime());
         i.putExtra("endTime", endDateTimeFragment.getDateTime());
         i.putExtra("values", values);
@@ -228,6 +261,12 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
         catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    private void getListOfAddresses()
+    {
+        for (DataModel d : data)
+            addresses.add(d.getAddress());
     }
 
     private File getOutputFile()
@@ -337,7 +376,7 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
     private void refreshData(long start, long end)
     {
         dataSource.open();
-        data = dataSource.getDataInRange(start, end);
+        data = dataSource.getDataInRange(null, start, end);
         dataSource.close();
     }
 
