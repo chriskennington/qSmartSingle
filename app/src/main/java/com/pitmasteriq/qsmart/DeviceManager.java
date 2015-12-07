@@ -57,7 +57,18 @@ public class DeviceManager
      * Get the currently held device object
      * @return
      */
-    public Device device(){return device;}
+    public Device device() throws NullDeviceException
+    {
+        if (device == null)
+            throw new NullDeviceException("Device is null");
+        else
+            return device;
+    }
+
+    public boolean hasDevice()
+    {
+        return (device != null);
+    }
 
 
     /**
@@ -182,5 +193,4 @@ public class DeviceManager
 
         return true;
     }
-
 }

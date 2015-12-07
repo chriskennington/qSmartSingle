@@ -65,7 +65,11 @@ public class ExceptionFragment extends DialogFragment
         Button ok = (Button) v.findViewById(R.id.error_ok);
 
 
-        title.setText(deviceManager.device().getDefinedName() + " Exceptions");
+        try
+        {
+            title.setText(deviceManager.device().getDefinedName() + " Exceptions");
+        }
+        catch(NullDeviceException e){e.printStackTrace();}
 
         cancel.setOnClickListener(cancelListener);
         ok.setOnClickListener(okListener);
@@ -81,63 +85,70 @@ public class ExceptionFragment extends DialogFragment
 
     private void addExceptions(LinearLayout layout)
     {
-        HashSet<DeviceExceptions.Exception> exceptions = deviceManager.device().exceptions().get();
-
-        if(exceptions.size() > 0)
+        try
         {
-            for(DeviceExceptions.Exception e : exceptions)
-            {
-                Log.i("ADD FLAG", "ADDING FLAG TO FRAGMENT");
-                CheckBox temp = new CheckBox(context);
-                temp.setText( e.name().replace("_", " ") );
-                checkboxes.add(temp);
-                temp.setTextColor(Color.WHITE);
-                map.put(temp, e);
+            HashSet<DeviceExceptions.Exception> exceptions = deviceManager.device().exceptions().get();
 
+            if (exceptions.size() > 0)
+            {
+                for (DeviceExceptions.Exception e : exceptions)
+                {
+                    Log.i("ADD FLAG", "ADDING FLAG TO FRAGMENT");
+                    CheckBox temp = new CheckBox(context);
+                    temp.setText(e.name().replace("_", " "));
+                    checkboxes.add(temp);
+                    temp.setTextColor(Color.WHITE);
+                    map.put(temp, e);
+
+                    layout.addView(temp);
+                }
+            } else
+            {
+                TextView temp = new TextView(context);
+                temp.setText(R.string.no_exceptions_found);
+                temp.setTextColor(Color.WHITE);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.topMargin = 25;
+                lp.bottomMargin = 25;
+                temp.setLayoutParams(lp);
+                temp.setGravity(Gravity.CENTER_HORIZONTAL);
                 layout.addView(temp);
             }
         }
-        else
-        {
-            TextView temp = new TextView(context);
-            temp.setText(R.string.no_exceptions_found);
-            temp.setTextColor(Color.WHITE);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            lp.topMargin = 25;
-            lp.bottomMargin = 25;
-            temp.setLayoutParams(lp);
-            temp.setGravity(Gravity.CENTER_HORIZONTAL);
-            layout.addView(temp);
-        }
+        catch(NullDeviceException e){e.printStackTrace();}
     }
 
     private void addSilencedExceptions(LinearLayout layout)
     {
-        HashSet<DeviceExceptions.Exception> exceptions = deviceManager.device().exceptions().silenced();
-
-        if (exceptions.size() > 0)
+        try
         {
-            for (DeviceExceptions.Exception e : exceptions)
+            HashSet<DeviceExceptions.Exception> exceptions = deviceManager.device().exceptions().silenced();
+
+            if (exceptions.size() > 0)
+            {
+                for (DeviceExceptions.Exception e : exceptions)
+                {
+                    TextView temp = new TextView(context);
+                    temp.setText(e.name().replace("_", " "));
+                    temp.setTextColor(Color.WHITE);
+                    layout.addView(temp);
+                }
+            } else
             {
                 TextView temp = new TextView(context);
-                temp.setText(e.name().replace("_", " "));
+                temp.setText(R.string.no_silenced_exceptions);
                 temp.setTextColor(Color.WHITE);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.topMargin = 25;
+                lp.bottomMargin = 25;
+                temp.setLayoutParams(lp);
+                temp.setGravity(Gravity.CENTER_HORIZONTAL);
                 layout.addView(temp);
             }
-        } else
-        {
-            TextView temp = new TextView(context);
-            temp.setText(R.string.no_silenced_exceptions);
-            temp.setTextColor(Color.WHITE);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            lp.topMargin = 25;
-            lp.bottomMargin = 25;
-            temp.setLayoutParams(lp);
-            temp.setGravity(Gravity.CENTER_HORIZONTAL);
-            layout.addView(temp);
         }
+        catch(NullDeviceException e){e.printStackTrace();}
     }
 
     private View.OnClickListener cancelListener = new View.OnClickListener()
@@ -158,8 +169,11 @@ public class ExceptionFragment extends DialogFragment
             {
                 if(cb.isChecked())
                 {
-                    //TODO silence exception
-                    deviceManager.device().exceptions().silenceException(map.get(cb));
+                    try
+                    {
+                        deviceManager.device().exceptions().silenceException(map.get(cb));
+                    }
+                    catch(NullDeviceException e){e.printStackTrace();}
                 }
             }
             dialog.dismiss();

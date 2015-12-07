@@ -15,10 +15,6 @@ public class Device
     private Probe food1Probe = new Probe("Food 1");
     private Probe food2Probe = new Probe("Food 2");
 
-
-
-
-
     private String macAddress = null;
     private String name = null;
     private String definedName = null;

@@ -16,6 +16,14 @@
 
     <string name="default_novalue">---</string>
 
+    <string name="export_info1">Every minute qSmart saves the current Pit set, Pit temp, Food 1 temp,
+        and Food 2 temp to internal storage for up to 24 hours of cook time. To export the data to a
+        .CSV click the Export Data Button.</string>
+    <string name="export_info2">Selecting to export the data will also clear it from the database.</string>
+    <string name="export_path">The data will be exported to\nDevice storage\\qSmart\\exports\\ </string>
+    <string name="export_path_dynamic">The data will be exported to\n%1$s/%2$s/</string>
+
+
 
 
     <string name="exceptions">" Exceptions"</string>

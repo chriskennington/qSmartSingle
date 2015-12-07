@@ -53,6 +53,7 @@ public class BluetoothService extends Service
     private Handler handler = new Handler();
     private UpdateThread updateThread;
 
+
     private DataSource dataSource;
     private SaveDataThread saveThread;
 
@@ -306,6 +307,7 @@ public class BluetoothService extends Service
             Log.i("TAG", "passcode 0, quitting");
             connectingDevice.disconnect();
             connectingDevice = null;
+            listener.passcodeDeclined();
             return;
         }
 
@@ -380,10 +382,16 @@ public class BluetoothService extends Service
 
         deviceManager.newDevice(connectedDevice.getMacAddress());
         connectedDevice.enableNotify(Uuid.STATUS_BASIC, new DataListener());
-        deviceManager.device().setStatus(Device.Status.OK);
 
-        //remove connection lost flag from device
-        deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.CONNECTION_LOST);
+        try
+        {
+            deviceManager.device().setStatus(Device.Status.OK);
+
+            //remove connection lost flag from device
+            deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.CONNECTION_LOST);
+        } catch (NullDeviceException e){e.printStackTrace();}
+
+
 
         //send message to activity
         listener.passcodeAccepted();
@@ -432,7 +440,11 @@ public class BluetoothService extends Service
                 {
                     listener.disconnectSucceeded();
                     connectedDevice = null;
-                    deviceManager.device().setStatus(Device.Status.Disconnected);
+
+                    try
+                    {
+                        deviceManager.device().setStatus(Device.Status.Disconnected);
+                    } catch (NullDeviceException e1){e1.printStackTrace();}
                 }
                 else
                 {
@@ -441,7 +453,10 @@ public class BluetoothService extends Service
 
                     editor.putLong(Preferences.CONNECTION_LOST_TIME, System.currentTimeMillis()).commit();
 
-                    deviceManager.device().setStatus(Device.Status.LostConnection);
+                    try
+                    {
+                        deviceManager.device().setStatus(Device.Status.LostConnection);
+                    } catch (NullDeviceException e1){e1.printStackTrace();}
                 }
             }
         }
@@ -454,9 +469,14 @@ public class BluetoothService extends Service
         {
             if (e.data().length == 20)
             {
+
                 //everytime new data is received remove connection lost exception, just in case.
-                deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.CONNECTION_LOST);
-                deviceManager.device().setStatus(Device.Status.OK);
+                try
+                {
+                    deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.CONNECTION_LOST);
+                    deviceManager.device().setStatus(Device.Status.OK);
+                } catch (NullDeviceException e1){ e1.printStackTrace();}
+
                 reconnectDevice = null;
 
                 editor.putLong(Preferences.LAST_UPDATE_TIME, System.currentTimeMillis()).commit();
@@ -524,9 +544,8 @@ public class BluetoothService extends Service
                 bits[i] = (flagBits & (1 << i)) != 0;
             }
 
-            if(deviceManager.device() != null)
+            try
             {
-                //TODO If flag bits have changed, do something
                 if (deviceManager.device().exceptions().compareHash(flagHash) == false)
                     handleFlagBits(bits);
 
@@ -535,6 +554,7 @@ public class BluetoothService extends Service
                 else
                     deviceManager.device().exceptions().removeException(DeviceExceptions.Exception.PIT_PROBE_ERROR);
             }
+            catch(NullDeviceException e){e.printStackTrace();}
 
             //UPDATE DEVICE VALUES
             if (!deviceManager.updateValues(values))
@@ -552,24 +572,25 @@ public class BluetoothService extends Service
 
         private void handleFlagBits(boolean[] bits)
         {
-            String flags = "";
-            for (int i = 0; i < bits.length; i++)
+            try
             {
-                if (bits[i])
+                String flags = "";
+                for (int i = 0; i < bits.length; i++)
                 {
-                    flags += "1 | ";
+                    if (bits[i])
+                    {
+                        flags += "1 | ";
 
-                    deviceManager.device().exceptions().addException(i);
-                }
-                else // bit is false
-                {
-                    flags += "0 | ";
+                        deviceManager.device().exceptions().addException(i);
+                    } else // bit is false
+                    {
+                        flags += "0 | ";
 
-                    deviceManager.device().exceptions().removeException(i);
+                        deviceManager.device().exceptions().removeException(i);
+                    }
                 }
             }
-
-            //Log.e("TAG", flags);
+            catch(NullDeviceException e){e.printStackTrace();}
         }
 
         private short getHighBits(short value)
@@ -596,12 +617,11 @@ public class BluetoothService extends Service
         {
             while (isRunning)
             {
-                if (deviceManager.device() != null)
+
+                if (deviceManager.hasDevice())
                 {
                     Log.e("TAG", "saving data");
-                    dataSource.open();
                     dataSource.storeDataString();
-                    dataSource.close();
                 }
 
                 try
@@ -619,55 +639,56 @@ public class BluetoothService extends Service
         @Override
         public void run()
         {
-
-            //check for exceptions and send appropriate alarms or notifications
-            if(deviceManager.device() != null)  //make sure we actually have a device to use
+            try
             {
-                if (deviceManager.device().exceptions().hasAlarm()) //device has an alarm flag
+                //check for exceptions and send appropriate alarms or notifications
+                if (deviceManager.hasDevice())  //make sure we actually have a device to use
                 {
-                    if (exceptionManager.canStartAlarm())   //check alarm is not already sounding
-                        setAlarm();                         //send alarm
-                }
-                else if (deviceManager.device().exceptions().hasNotify()) //no alarm, check for notification flags
-                {
-                    exceptionManager.sendExceptionNotification(); //send a notification
-                }
-            }
-
-            //check if we have not received an update in the last 5 minutes
-            //If no update to status basic has been received in 5 minutes we can safely assume
-            //that the connection to the device is lost
-            long lastUpdate = prefs.getLong(Preferences.LAST_UPDATE_TIME, -1);
-            if (lastUpdate != -1 && (System.currentTimeMillis() - lastUpdate) > 300000)
-            {
-                if (deviceManager.device() != null)
-                {
-                    Log.i("TAG", "Connection lost due to not receiving updates to characteristic");
-                    deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
-                }
-            }
-
-            //check to see if we need to send the connection lost alarm
-            //If the connection has been lost for 10 seconds we can add the connection lost exception
-            if (reconnectDevice != null)
-            {
-                long lostTime = prefs.getLong(Preferences.CONNECTION_LOST_TIME, -1);
-
-                if (lostTime == -1)
-                    return;
-
-                if (System.currentTimeMillis() - lostTime > (10000))
-                {
-                    if (deviceManager.device() != null)
+                    if (deviceManager.device().exceptions().hasAlarm()) //device has an alarm flag
                     {
-                        Log.i("TAG", "connection lost for more than 10 seconds");
-                        deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
-
-                        //reset connection lost time
-                        editor.putLong(Preferences.CONNECTION_LOST_TIME, -1).commit();
+                        if (exceptionManager.canStartAlarm())   //check alarm is not already sounding
+                            setAlarm();                         //send alarm
+                    } else if (deviceManager.device().exceptions().hasNotify()) //no alarm, check for notification flags
+                    {
+                        exceptionManager.sendExceptionNotification(); //send a notification
                     }
                 }
-            }
+
+                //check if we have not received an update in the last 5 minutes
+                //If no update to status basic has been received in 5 minutes we can safely assume
+                //that the connection to the device is lost
+                long lastUpdate = prefs.getLong(Preferences.LAST_UPDATE_TIME, -1);
+                if (lastUpdate != -1 && (System.currentTimeMillis() - lastUpdate) > 300000)
+                {
+                    if (deviceManager.hasDevice())
+                    {
+                        Log.i("TAG", "Connection lost due to not receiving updates to characteristic");
+                        deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
+                    }
+                }
+
+                //check to see if we need to send the connection lost alarm
+                //If the connection has been lost for 10 seconds we can add the connection lost exception
+                if (reconnectDevice != null)
+                {
+                    long lostTime = prefs.getLong(Preferences.CONNECTION_LOST_TIME, -1);
+
+                    if (lostTime == -1)
+                        return;
+
+                    if (System.currentTimeMillis() - lostTime > (10000))
+                    {
+                        if (deviceManager.device() != null)
+                        {
+                            Log.i("TAG", "connection lost for more than 10 seconds");
+                            deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
+
+                            //reset connection lost time
+                            editor.putLong(Preferences.CONNECTION_LOST_TIME, -1).commit();
+                        }
+                    }
+                }
+            } catch (NullDeviceException e){}
         }
     }
 }

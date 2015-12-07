@@ -3,7 +3,7 @@
 
     <item android:id="@+id/action_scanner"
           android:title="Scanner"
-          android:icon="@drawable/menu_scan_result"
+          android:icon="@drawable/menu_scan_result_anim"
           android:orderInCategory="100"
           android:showAsAction="always"/>
 

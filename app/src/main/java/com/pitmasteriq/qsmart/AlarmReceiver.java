@@ -106,10 +106,9 @@ public class AlarmReceiver extends Activity
                     container.addView(temp);
                 }
             }
-        } catch (NullPointerException e)
-        {
-            Log.e("tag", "Cound not add exceptions due to null pointer");
         }
+        catch (NullPointerException e){Log.e("tag", "Could not add exceptions due to null pointer");}
+        catch (NullDeviceException e){Log.e("tag", "Could not add exceptions due to null device");}
     }
 
     public void close(View v)

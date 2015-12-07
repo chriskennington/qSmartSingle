@@ -83,8 +83,14 @@ public class StandardFragment extends BaseFragment
     {
         int blinkRate = 0;
 
-        Device d = deviceManager.device();
-        if(d != null)
+        Device d = null;
+
+        try
+        {
+           d = deviceManager.device();
+        } catch (NullDeviceException e) {}
+
+        if(deviceManager.hasDevice())
         {
             deviceName.clearAnimation();
             pitTemp.clearAnimation();
@@ -129,9 +135,9 @@ public class StandardFragment extends BaseFragment
 
 
 
-            if (deviceManager.device().exceptions().hasException())
+            if (d.exceptions().hasException())
             {
-                for(DeviceExceptions.Exception e : deviceManager.device().exceptions().get())
+                for(DeviceExceptions.Exception e : d.exceptions().get())
                 {
                     switch(e)
                     {

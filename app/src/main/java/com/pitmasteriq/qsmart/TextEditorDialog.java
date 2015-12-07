@@ -61,26 +61,33 @@ public class TextEditorDialog extends DialogFragment
             @Override
             public void onClick(View v)
             {
+                Device d = null;
+                try
+                {
+                    d = deviceManager.device();
+                }
+                catch(Exception e){e.printStackTrace(); return;}
+
                 switch (selector)
                 {
                     case DEVICE_NAME:
                         if(value.getText().length() > 0)
-                            deviceManager.device().setDefinedName(value.getText().toString());
+                            d.setDefinedName(value.getText().toString());
                         else
-                            deviceManager.device().setDefinedName(deviceManager.device().getName());
+                            d.setDefinedName(d.getName());
                         break;
                     case FOOD1_NAME:
                         if(value.getText().length() > 0)
-                            deviceManager.device().food1Probe().setName(value.getText().toString());
+                            d.food1Probe().setName(value.getText().toString());
                         else
-                            deviceManager.device().food1Probe().setName("Food 1");
+                            d.food1Probe().setName("Food 1");
                         break;
 
                     case FOOD2_NAME:
                         if(value.getText().length() > 0)
-                            deviceManager.device().food2Probe().setName(value.getText().toString());
+                            d.food2Probe().setName(value.getText().toString());
                         else
-                            deviceManager.device().food2Probe().setName("Food 2");
+                            d.food2Probe().setName("Food 2");
                         break;
                 }
                 deviceManager.saveDevice();

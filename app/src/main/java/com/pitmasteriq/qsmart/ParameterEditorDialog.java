@@ -135,7 +135,10 @@ public class ParameterEditorDialog extends DialogFragment
 
             if (!fahrenheit)
             {
-                tempValue = c2fa(tempValue);
+                if (selector == DeviceConfig.CONFIG_PIT_ALARM)
+                    tempValue = c2fr(tempValue);
+                else
+                    tempValue = c2fa(tempValue);
             }
 
             Log.e("TAG", "converted value " + tempValue);
@@ -233,6 +236,11 @@ public class ParameterEditorDialog extends DialogFragment
 
     private int c2fa(int c)
     {
-        return (int) (((9.0/5.0) * c) + 32 );
+        return Temperature.c2fa(c);
+    }
+
+    private int c2fr(int c)
+    {
+        return Temperature.c2fr(c);
     }
 }

@@ -42,17 +42,26 @@ public class Temperature
 
     public static int f2c(int f)
     {
-        return (int) ((f-32) * (5.0/9.0));
+        float temp = (float) ((f-32) * (5.0/9.0));
+        return roundUpOrDown(temp);
     }
 
-    public static int c2f(int c)
+    public static int c2fa(int c)
     {
-        return (int)(c * 1.8 +32);
+        float temp = (float)(c * 1.8 +32);
+        return roundUpOrDown(temp);
+    }
+
+    public static int c2fr(int c)
+    {
+        float temp = (float) (c * 1.8);
+        return roundUpOrDown(temp);
     }
 
     private int f2cr(int f)
     {
-        return (int) ((5.0/9.0) * f);
+        float temp = (float) ((5.0/9.0) * f);
+        return roundUpOrDown(temp);
     }
 
     private boolean isFahrenheit()
@@ -62,5 +71,15 @@ public class Temperature
             return true;
         else
             return false;
+    }
+
+    private static int roundUpOrDown(float temp)
+    {
+        if (temp > 0)
+            temp += 0.5;
+        else if (temp < 0)
+            temp -= 0.5;
+
+        return (int) temp;
     }
 }

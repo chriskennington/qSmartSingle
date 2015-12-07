@@ -16,7 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.pitmasteriq.qsmart.export.ExportDataActivity;
+import com.pitmasteriq.qsmart.export.SimpleExportActivity;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -127,6 +127,7 @@ public class SettingsActivity extends PreferenceActivity
     public void onExportDataClick(View v)
     {
         Log.e("TAG", "exporting data");
-        startActivity(new Intent(this, ExportDataActivity.class));
+        //startActivity(new Intent(this, ExportDataActivity.class));
+        startActivity(new Intent(this, SimpleExportActivity.class));
     }
 }

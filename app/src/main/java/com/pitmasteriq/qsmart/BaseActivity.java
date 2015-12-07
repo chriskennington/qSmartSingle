@@ -15,7 +15,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
-import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -258,10 +257,6 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
         ab.setDisplayShowCustomEnabled(true);
 
         scannerButton = (ImageView) v.findViewById(R.id.action_bar_scanner);
-        AnimationDrawable ad = (AnimationDrawable) scannerButton.getDrawable();
-        ad.stop();
-        ad.selectDrawable(1);
-
         settingsButton = (ImageView) v.findViewById(R.id.action_bar_settings);
         infoButton = (ImageView) v.findViewById(R.id.action_bar_info);
         actionBarTitle = (TextView) v.findViewById(R.id.action_bar_title);
@@ -400,8 +395,11 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
 
         String currentAddress = null;
 
-        if(deviceManager.device() != null)
+        try
+        {
             currentAddress = deviceManager.device().getAddress();
+        }
+        catch(NullDeviceException e){}
 
         Bundle args = new Bundle();
         args.putString("address", currentAddress);
@@ -431,7 +429,7 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
 
     public void openExceptions(View v)
     {
-        if(deviceManager.device() != null)
+        if(deviceManager.hasDevice())
         {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             removePreviousFragment(ft);
@@ -459,57 +457,87 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
 
     public void changePitSet(View v)
     {
-        openParameterDialog("Change Pit Set Temperature", deviceManager.device().config().pitSet().get(), DeviceConfig.CONFIG_PIT_SET);
+        try
+        {
+            openParameterDialog("Change Pit Set Temperature", deviceManager.device().config().pitSet().get(), DeviceConfig.CONFIG_PIT_SET);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changePitDeviation(View v)
     {
-        openParameterDialog("Change Pit Temp Deviation", deviceManager.device().config().pitAlarmDeviation().get(), DeviceConfig.CONFIG_PIT_ALARM);
+        try
+        {
+            openParameterDialog("Change Pit Temp Deviation", deviceManager.device().config().pitAlarmDeviation().getRelative(), DeviceConfig.CONFIG_PIT_ALARM);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changeFood1Alarm(View v)
     {
-        openParameterDialog("Change Food 1 Alarm Temp", deviceManager.device().config().food1AlarmTemp().get(), DeviceConfig.CONFIG_FOOD_1_ALARM);
+        try
+        {
+            openParameterDialog("Change Food 1 Alarm Temp", deviceManager.device().config().food1AlarmTemp().get(), DeviceConfig.CONFIG_FOOD_1_ALARM);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changeFood2Alarm(View v)
     {
-        openParameterDialog("Change Food 2 Alarm Temp", deviceManager.device().config().food2AlarmTemp().get(), DeviceConfig.CONFIG_FOOD_2_ALARM);
+        try
+        {
+            openParameterDialog("Change Food 2 Alarm Temp", deviceManager.device().config().food2AlarmTemp().get(), DeviceConfig.CONFIG_FOOD_2_ALARM);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changeDelayPitSet(View v)
     {
-        openParameterDialog("Change Delay Pit Set", deviceManager.device().config().delayPitSet().get(), DeviceConfig.CONFIG_DELAY_PIT_SET);
+        try
+        {
+            openParameterDialog("Change Delay Pit Set", deviceManager.device().config().delayPitSet().get(), DeviceConfig.CONFIG_DELAY_PIT_SET);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changeDelayTime(View v)
     {
-        openParameterDialog("Change Delay Time", deviceManager.device().config().getDelayTime(), DeviceConfig.CONFIG_DELAY_TIME);
+        try
+        {
+            openParameterDialog("Change Delay Time", deviceManager.device().config().getDelayTime(), DeviceConfig.CONFIG_DELAY_TIME);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changeFood1PitSet(View v)
     {
-        openParameterDialog("Change Food 1 Pit Set", deviceManager.device().config().food1PitSet().get(), DeviceConfig.CONFIG_FOOD_1_PIT_SET);
+        try
+        {
+            openParameterDialog("Change Food 1 Pit Set", deviceManager.device().config().food1PitSet().get(), DeviceConfig.CONFIG_FOOD_1_PIT_SET);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changeAtFood1Temp(View v)
     {
-        openParameterDialog("Change Food 2 Pit Set", deviceManager.device().config().food2PitSet().get(), DeviceConfig.CONFIG_FOOD_2_PIT_SET);
+        try
+        {
+            openParameterDialog("Change Pit Set at Food 1 Temp", deviceManager.device().config().food2PitSet().get(), DeviceConfig.CONFIG_FOOD_1_TEMP);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changeFood2PitSet(View v)
     {
-        openParameterDialog("Change Pit Set at Food 1 Temp", deviceManager.device().config().food1Temp().get(), DeviceConfig.CONFIG_FOOD_1_TEMP);
+        try
+        {
+            openParameterDialog("Change Food 2 Pit Set", deviceManager.device().config().food1Temp().get(), DeviceConfig.CONFIG_FOOD_2_PIT_SET);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     public void changeAtFood2Temp(View v)
     {
-        openParameterDialog("Change Pit Set at Food 2 Temp", deviceManager.device().config().food2Temp().get(), DeviceConfig.CONFIG_FOOD_2_TEMP);
+        try
+        {
+            openParameterDialog("Change Pit Set at Food 2 Temp", deviceManager.device().config().food2Temp().get(), DeviceConfig.CONFIG_FOOD_2_TEMP);
+        } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
     private void openParameterDialog(String title, int current, int selector)
     {
-        if (deviceManager.device() == null)
+        if (!deviceManager.hasDevice())
             return;
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();

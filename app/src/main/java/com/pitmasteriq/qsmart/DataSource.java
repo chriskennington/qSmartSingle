@@ -15,6 +15,8 @@ import java.util.List;
  */
 public class DataSource
 {
+    private static final int ROWS_TO_SAVE = 5;
+
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
 
@@ -35,7 +37,15 @@ public class DataSource
 
     public void storeDataString()
     {
-        Device d = DeviceManager.get(MyApplication.getAppContext()).device();
+        open();
+
+        Device d = null;
+
+        try
+        {
+           d = DeviceManager.get(MyApplication.getAppContext()).device();
+        }
+        catch(NullDeviceException e){e.printStackTrace();}
 
         if (d == null)
             return;
@@ -48,18 +58,43 @@ public class DataSource
         values.put(DatabaseHelper.COL_FOOD1_TEMP, d.food1Probe().temperature().getRawTemp());
         values.put(DatabaseHelper.COL_FOOD2_TEMP, d.food2Probe().temperature().getRawTemp());
 
-        long result = database.insert(DatabaseHelper.TABLE_DATA, null, values);
-        if (result == -1)
-            Log.e("TAG", "insert failed");
+
+
+        if (getNumberOfDataRows() < ROWS_TO_SAVE)
+        {
+            Log.e("", "ADDING ROW");
+
+            long result = database.insert(DatabaseHelper.TABLE_DATA, null, values);
+
+            if (result == -1)
+                Log.e("TAG", "insert failed");
+        }
+        else
+        {
+            Log.e("", "UPDATING ROW");
+
+            int result = database.update(DatabaseHelper.TABLE_DATA, values, DatabaseHelper.COL_DATE + "= (SELECT min(" + DatabaseHelper.COL_DATE + ") FROM "+ DatabaseHelper.TABLE_DATA +")", null);
+            if (result == 0)
+                Log.e("TAG", "update failed");
+        }
+
+        close();
     }
 
-    public void deleteDataString(int id)
+    public void clearData()
     {
-        long result = database.delete(DatabaseHelper.TABLE_DATA, DatabaseHelper.COL_ID + "=" + id, null);
+        open();
+
+        String query = "DELETE FROM " + DatabaseHelper.TABLE_DATA;
+        database.execSQL(query);
+
+        close();
     }
 
     public List<DataModel> getAllData()
     {
+        open();
+
         List<DataModel> storedData = new ArrayList<>();
 
         String query = "SELECT * FROM " + DatabaseHelper.TABLE_DATA
@@ -76,11 +111,15 @@ public class DataSource
         }
 
         cursor.close();
+
+        close();
         return storedData;
     }
 
     public List<DataModel> getDataInRange(String address, long start, long end)
     {
+        open();
+
         List<DataModel> storedData = new ArrayList<>();
         String query;
 
@@ -112,7 +151,28 @@ public class DataSource
         }
 
         cursor.close();
+
+        close();
         return storedData;
+    }
+
+    private int getNumberOfDataRows()
+    {
+        String query = "SELECT * FROM " + DatabaseHelper.TABLE_DATA;
+        Cursor cursor = database.rawQuery(query, null);
+
+        int count = cursor.getCount();
+        cursor.close();
+        return count;
+    }
+
+    public int getNumberOfDataEntries()
+    {
+        open();
+        int count = getNumberOfDataRows();
+        close();
+
+        return count;
     }
 
     private DataModel cursorToDataModel(Cursor cursor)

@@ -86,7 +86,13 @@ public class BaseFragment extends Fragment
 
     protected void updateStatusIcon(ImageView v, int blinkRate)
     {
-        Device d = deviceManager.device();
+        Device d = null;
+
+        try
+        {
+            d = deviceManager.device();
+        }
+        catch (NullDeviceException e){}
 
         if (d != null)
         {
