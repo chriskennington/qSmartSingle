@@ -13,7 +13,6 @@ import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 /**
  * Created by Chris on 7/31/2015.
@@ -110,13 +109,13 @@ public class ExceptionManager
     {
         if(manager == null)
         {
-            Log.d("Exception Manager", "notification canceled --- manager null");
+            Console.d("Exception Manager: notification canceled --- manager null");
             return false;
         }
 
         if(!canSendNotify())
         {
-            Log.d("Exception Manager", "notification canceled --- cant send notify");
+            Console.d("Exception Manager: notification canceled --- cant send notify");
             return false;
         }
 
@@ -222,7 +221,7 @@ public class ExceptionManager
         notificationActive = false;
 
 
-        Log.d("Exception Manager", "SETTING NEW NOTIFICATION TIME!!!");
+        Console.d("Exception Manager: SETTING NEW NOTIFICATION TIME!!!");
 
         //set the value in preferences to true
         context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.NOTIFY_SOUNDING, false)

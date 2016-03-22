@@ -197,6 +197,16 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     }
 
     @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Console.e("On destroy called");
+        //TODO May cause bugs
+        service.disconnectFromDevice();
+        stopService(new Intent(this, BluetoothService.class));
+    }
+
+    @Override
     public void onFragmentResponse(FragmentResponseEvent e)
     {
         switch (e.type())
@@ -238,7 +248,6 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     private void shutdownApp()
     {
         shuttingDown = true;
-
         service.disconnectFromDevice();
         stopService(new Intent(this, BluetoothService.class));
         finish();
@@ -280,7 +289,7 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
             MessageDialog md = MessageDialog.newInstance("Disclaimer", "Read all safety warnings in the IQ130 Setup and Operating Instructions Manual.  Never leave a charcoal fire unattended!", "Agree");
             md.show(getFragmentManager(), "dialog");
 
-            Toast.makeText(this, "first launch", Toast.LENGTH_LONG).show();
+            //Toast.makeText(this, "first launch", Toast.LENGTH_LONG).show();
 
             return true;
         }
@@ -310,9 +319,12 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     private BluetoothService.ServiceListener serviceListener = new BluetoothService.ServiceListener()
     {
         @Override
-        public void connectFailed()
+        public void connectFailed(String reason)
         {
             hideLoadingDialog();
+
+            MessageDialog md = MessageDialog.newInstance("Failed", "Connection failed with status: " + reason);
+            md.show(getFragmentManager(), "dialog");
         }
 
         @Override
@@ -515,7 +527,7 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     {
         try
         {
-            openParameterDialog("Change Pit Set at Food 1 Temp", deviceManager.device().config().food2PitSet().get(), DeviceConfig.CONFIG_FOOD_1_TEMP);
+            openParameterDialog("Change Pit Set at Food 1 Temp", deviceManager.device().config().food1Temp().get(), DeviceConfig.CONFIG_FOOD_1_TEMP);
         } catch (NullDeviceException e) {e.printStackTrace();}
     }
 
@@ -523,7 +535,7 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     {
         try
         {
-            openParameterDialog("Change Food 2 Pit Set", deviceManager.device().config().food1Temp().get(), DeviceConfig.CONFIG_FOOD_2_PIT_SET);
+            openParameterDialog("Change Food 2 Pit Set", deviceManager.device().config().food2PitSet().get(), DeviceConfig.CONFIG_FOOD_2_PIT_SET);
         } catch (NullDeviceException e) {e.printStackTrace();}
     }
 

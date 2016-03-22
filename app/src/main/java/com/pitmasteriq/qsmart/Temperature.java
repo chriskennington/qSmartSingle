@@ -26,6 +26,9 @@ public class Temperature
 
     public int get()
     {
+        if (temp == 0)
+            return 0;
+
         if (!isFahrenheit())
             return f2c(temp);
         else
@@ -34,6 +37,9 @@ public class Temperature
 
     public int getRelative()
     {
+        if (temp == 0)
+            return 0;
+
         if (!isFahrenheit())
             return f2cr(temp);
         else
@@ -55,7 +61,7 @@ public class Temperature
     public static int c2fr(int c)
     {
         float temp = (float) (c * 1.8);
-        return roundUpOrDown(temp);
+        return roundUpOrDownRelative(c, temp);
     }
 
     private int f2cr(int f)
@@ -79,6 +85,28 @@ public class Temperature
             temp += 0.5;
         else if (temp < 0)
             temp -= 0.5;
+
+        return (int) temp;
+    }
+
+    private static int roundUpOrDownRelative(int c, float temp)
+    {
+        switch (c)
+        {
+            case 11: case 12: case 16: case 17: case 21:
+            case 22: case 26: case 27: case 31: case 32:
+            case 36: case 37: case 41: case 42: case 46:
+            case 47: case 51: case 52:
+            {
+                //round up
+                temp += 0.5;
+            }
+            default:
+            {
+                //round down
+                temp -= 0.5;
+            }
+        }
 
         return (int) temp;
     }

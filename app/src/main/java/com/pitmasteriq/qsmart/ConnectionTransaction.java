@@ -3,7 +3,6 @@ package com.pitmasteriq.qsmart;
 import android.content.Context;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.idevicesinc.sweetblue.BleDevice;
 import com.idevicesinc.sweetblue.utils.Interval;
@@ -70,7 +69,7 @@ public class ConnectionTransaction
 
 
         data = ByteBuffer.allocate(2).putShort( value ).array();
-        Log.w("TAG", getResponseString(data)[1]);
+        Console.w(getResponseString(data)[1]);
 
         device.write(Uuid.PASSCODE, data, new BleDevice.ReadWriteListener()
         {
@@ -98,15 +97,15 @@ public class ConnectionTransaction
             if( e.data().length == 20 )
             {
                 String[] responseStrings = getResponseString(e.data());
-                Log.d("TAG", responseStrings[1]); //print formatted version
+                Console.d(responseStrings[1]); //print formatted version
 
                 if( responseStrings[0].equals(WAITING_FOR_RESPONSE) )
                 {
-                    Log.i("trans", "Waiting for response from module: " + e.device().getMacAddress());
+                    Console.i("Waiting for response from module: " + e.device().getMacAddress());
                 }
                 else if( responseStrings[0].equals(BAD_RESPONSE) )
                 {
-                    Log.i("trans", "Passcode incorrect: " + e.device().getMacAddress());
+                    Console.i("Passcode incorrect: " + e.device().getMacAddress());
                     e.device().disableNotify(Uuid.STATUS_BASIC, this);
                     e.device().disconnect();
 
@@ -120,7 +119,7 @@ public class ConnectionTransaction
                     {
                         passcodeAccepted = true;
 
-                        Log.i("trans", "Passcode correct: " + e.device().getMacAddress());
+                        Console.i("Passcode correct: " + e.device().getMacAddress());
                         listener.onPasscodeAccepted(e.device());
                         listener.onDataReceived(e.device(), e.data());
                     }

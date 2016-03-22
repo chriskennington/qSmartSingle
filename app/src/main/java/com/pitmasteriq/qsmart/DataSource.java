@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.List;
  */
 public class DataSource
 {
-    private static final int ROWS_TO_SAVE = 5;
+    private static final int ROWS_TO_SAVE = 1440;
 
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
@@ -53,29 +52,43 @@ public class DataSource
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COL_DATE, System.currentTimeMillis());
         values.put(DatabaseHelper.COL_ADDR, d.getAddress());
-        values.put(DatabaseHelper.COL_PIT_SET, d.config().pitSet().getRawTemp());
-        values.put(DatabaseHelper.COL_PIT_TEMP, d.pitProbe().temperature().getRawTemp());
-        values.put(DatabaseHelper.COL_FOOD1_TEMP, d.food1Probe().temperature().getRawTemp());
-        values.put(DatabaseHelper.COL_FOOD2_TEMP, d.food2Probe().temperature().getRawTemp());
 
+        if (d.config().pitSet().getRawTemp() != 999)
+            values.put(DatabaseHelper.COL_PIT_SET, d.config().pitSet().getRawTemp());
+        else
+            values.put(DatabaseHelper.COL_PIT_SET, 0);
 
+        if (d.pitProbe().temperature().getRawTemp() != 999)
+            values.put(DatabaseHelper.COL_PIT_TEMP, d.pitProbe().temperature().getRawTemp());
+        else
+            values.put(DatabaseHelper.COL_PIT_TEMP, 0);
+
+        if (d.food1Probe().temperature().getRawTemp() != 999)
+            values.put(DatabaseHelper.COL_FOOD1_TEMP, d.food1Probe().temperature().getRawTemp());
+        else
+            values.put(DatabaseHelper.COL_FOOD1_TEMP, 0);
+
+        if (d.food2Probe().temperature().getRawTemp() != 999)
+            values.put(DatabaseHelper.COL_FOOD2_TEMP, d.food2Probe().temperature().getRawTemp());
+        else
+            values.put(DatabaseHelper.COL_FOOD2_TEMP, 0);
 
         if (getNumberOfDataRows() < ROWS_TO_SAVE)
         {
-            Log.e("", "ADDING ROW");
+            Console.d("Database: ADDING ROW");
 
             long result = database.insert(DatabaseHelper.TABLE_DATA, null, values);
 
             if (result == -1)
-                Log.e("TAG", "insert failed");
+                Console.e("Database: Insert failed");
         }
         else
         {
-            Log.e("", "UPDATING ROW");
+            Console.d("Database: UPDATING ROW");
 
             int result = database.update(DatabaseHelper.TABLE_DATA, values, DatabaseHelper.COL_DATE + "= (SELECT min(" + DatabaseHelper.COL_DATE + ") FROM "+ DatabaseHelper.TABLE_DATA +")", null);
             if (result == 0)
-                Log.e("TAG", "update failed");
+                Console.e("Database: update failed");
         }
 
         close();

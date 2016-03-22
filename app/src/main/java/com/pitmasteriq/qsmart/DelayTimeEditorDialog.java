@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -150,8 +149,9 @@ public class DelayTimeEditorDialog extends DialogFragment
         int minutes = i * 15;
         int hours = minutes / 60;
 
-        Log.e("TAG" ,"minutes 1 " + minutes);
-        Log.e("TAG", "hours 1 " + hours);
+        Console.e("minutes 1 " + minutes);
+        Console.e("hours 1 " + hours);
+
 
         minutes = minutes - (hours * 60);
 
@@ -163,8 +163,8 @@ public class DelayTimeEditorDialog extends DialogFragment
         String h = formatter.format("%02d", hours).toString();
         formatter.close();
 
-        Log.e("TAG" ,"minutes 2 " +  m);
-        Log.e("TAG" ,"hours 2 " + h);
+        Console.e("minutes 2 " + m);
+        Console.e("hours 2 " + h);
 
         return h + ":" + m;
 

@@ -12,11 +12,11 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
+import com.pitmasteriq.qsmart.Console;
 import com.pitmasteriq.qsmart.DataModel;
 import com.pitmasteriq.qsmart.DataSource;
 import com.pitmasteriq.qsmart.DatePickedListener;
@@ -321,7 +321,7 @@ public class ExportDataActivity extends ActionBarActivity implements ActionBar.T
                 .getBoolean(Preferences.TEMPERATURE_UNITS, true);
 
         String dataString = "";
-        Log.e("TAG", "size" + data.size());
+        Console.e("size" + data.size());
 
         for (DataModel d : data)
         {

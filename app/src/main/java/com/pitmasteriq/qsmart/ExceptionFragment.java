@@ -5,7 +5,6 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -93,7 +92,7 @@ public class ExceptionFragment extends DialogFragment
             {
                 for (DeviceExceptions.Exception e : exceptions)
                 {
-                    Log.i("ADD FLAG", "ADDING FLAG TO FRAGMENT");
+                    Console.i("ADD FLAG: ADDING FLAG TO FRAGMENT");
                     CheckBox temp = new CheckBox(context);
                     temp.setText(e.name().replace("_", " "));
                     checkboxes.add(temp);

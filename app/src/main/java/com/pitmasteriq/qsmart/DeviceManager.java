@@ -3,7 +3,6 @@ package com.pitmasteriq.qsmart;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import java.util.List;
 
@@ -77,11 +76,11 @@ public class DeviceManager
     private void loadDevice()
     {
         long start = System.currentTimeMillis();
-        Log.i("load", "loading device");
+        Console.i("load: loading device");
 
         if(!hasSavedFile())
         {
-            Log.i("load", "no saved file");
+            Console.i("load: no saved file");
             return;
         }
 
@@ -106,7 +105,7 @@ public class DeviceManager
         device.exceptions().loadExceptions(prefs.getInt("exceptions", 0));
         device.exceptions().loadSilenced(prefs.getInt("silenced", 0));
 
-        Log.i("load", "finished loading device - " + (System.currentTimeMillis() - start) + "ms");
+        Console.i("load: finished loading device - " + (System.currentTimeMillis() - start) + "ms");
     }
 
     /**
@@ -116,11 +115,11 @@ public class DeviceManager
     {
         long start = System.currentTimeMillis();
 
-        Log.i("save", "saving device");
+        Console.i("save: saving device");
 
         if(device == null)
         {
-            Log.i("save", "save failed");
+            Console.i("save: save failed");
             return;
         }
 
@@ -152,7 +151,7 @@ public class DeviceManager
 
         editor.commit();
 
-        Log.i("save", "finished saving device - " + (System.currentTimeMillis() - start) + "ms" );
+        Console.i("save: finished saving device - " + (System.currentTimeMillis() - start) + "ms");
     }
 
 

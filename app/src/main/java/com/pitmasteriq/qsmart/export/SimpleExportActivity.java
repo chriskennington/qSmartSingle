@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.pitmasteriq.qsmart.Console;
 import com.pitmasteriq.qsmart.DataModel;
 import com.pitmasteriq.qsmart.DataSource;
 import com.pitmasteriq.qsmart.MyApplication;
@@ -31,8 +31,8 @@ public class SimpleExportActivity extends Activity
     private DataSource dataSource;
     private List<DataModel> data;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-    private SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm");
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -152,7 +152,7 @@ public class SimpleExportActivity extends Activity
                 .getBoolean(Preferences.TEMPERATURE_UNITS, true);
 
         String dataString = "";
-        Log.e("TAG", "size" + data.size());
+        Console.e("size" + data.size());
 
         for (DataModel d : data)
         {

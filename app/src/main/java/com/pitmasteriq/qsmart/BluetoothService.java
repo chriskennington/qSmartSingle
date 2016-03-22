@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.idevicesinc.sweetblue.BleDevice;
 import com.idevicesinc.sweetblue.BleDeviceConfig;
@@ -30,10 +29,11 @@ public class BluetoothService extends Service
 {
     public static final int ALARM_WAIT_TIME = 60000;
 
-
     private static final int UPDATE_INTERVAL = 1000;
     private static final int TEMPERATURE_OFFSET = 145;
     private static final int NUMBER_OF_ALARM_BITS = 11;
+
+    private int writePasscodeAttempts = 0;
 
     private ServiceListener listener;
     private final IBinder binder = new BluetoothBinder();
@@ -132,7 +132,7 @@ public class BluetoothService extends Service
         void passcodeDeclined();
 
         void connectSucceeded();
-        void connectFailed();
+        void connectFailed(String reason);
 
         void disconnectSucceeded();
         void disconnectFailed();
@@ -154,18 +154,19 @@ public class BluetoothService extends Service
         public void onEvent(DiscoveryEvent e)
         {
             //if name does not match expression assume it is not an IQ and return
-            if (!e.device().getName_native().matches("[I][Q]\\d{4}"))
+            if (!e.device().getName_native().toUpperCase().matches("[I][Q][A-F0-9]{4}"))
                 return;
 
             if (e.was(LifeCycle.DISCOVERED))
             {
                 ScannedDevices.get().addressDiscovered(e.device().getMacAddress());
-                Log.e("Discovered", e.device().getMacAddress() + ":" + e.device().getName_native());
+                Console.e("Discovered:" + e.device().getMacAddress() + ":" + e.device().getName_native());
             }
 
             if (e.was(LifeCycle.REDISCOVERED))
             {
                 ScannedDevices.get().addressRediscovered(e.device().getMacAddress());
+                Console.i("Rediscovered: " + e.device().getMacAddress() + ":" + e.device().getName_native());
             }
 
             if (e.was(LifeCycle.UNDISCOVERED))
@@ -208,7 +209,9 @@ public class BluetoothService extends Service
 
     public void cancelConnectionAttempt()
     {
-
+        //TODO
+        connectingDevice.disconnect();
+        connectingDevice = null;
     }
 
     public void updateConfigurationValue(int selector, int value)
@@ -224,7 +227,6 @@ public class BluetoothService extends Service
 
     private void writeConfigChange(int selector, int value)
     {
-        //TODO
         if (connectedDevice == null)
         {
             listener.configChangeFailed();
@@ -262,11 +264,11 @@ public class BluetoothService extends Service
                 {
                     if (e.status() == BleDevice.ReadWriteListener.Status.SUCCESS)
                     {
-                        Log.i("TAG", "wrote Configuration Change.");
+                        Console.i("wrote Configuration Change.");
                         listener.configChangeSucceeded();
                     } else
                     {
-                        Log.i("TAG", "failed Configuration Change.");
+                        Console.i("failed Configuration Change.");
                         listener.configChangeFailed();
                     }
                 }
@@ -296,15 +298,15 @@ public class BluetoothService extends Service
 
     private void writePasscode()
     {
-        Log.i("TAG", "sending passcode");
+        writePasscodeAttempts++;
+        Console.i("sending passcode attempt " + writePasscodeAttempts);
+
         short value = Short.parseShort(PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                 .getString(Preferences.PASSCODE, "0000"));
 
         if (value == 0)
         {
-            //TODO passcode set to 0 send message to user
-
-            Log.i("TAG", "passcode 0, quitting");
+            Console.i("passcode 0, quitting");
             connectingDevice.disconnect();
             connectingDevice = null;
             listener.passcodeDeclined();
@@ -320,25 +322,38 @@ public class BluetoothService extends Service
             {
                 if (e.wasSuccess())
                 {
+                    writePasscodeAttempts = 0; // reset passcode attempts
+                    //BleDevice.ReadWriteListener.Status.
                     new BackgroundThread(new Runnable()
                     {
                         @Override
                         public void run()
                         {
                             // sleep for 3 seconds before checking passcode response
-                            Log.i("TAG", "sleeping for 3 seconds");
+                            Console.i("sleeping for 3 seconds");
                             try
                             {
                                 Thread.sleep(3000);
                             } catch (InterruptedException e){}
 
-                            Log.i("TAG", "checking passcode validity");
+                            Console.i("checking passcode validity");
                             checkPasscodeValidity();
                         }
                     }).start();
                 } else
                 {
-                    Log.i("TAG", "write failed?");
+                    Console.i("write failed on attempt " + writePasscodeAttempts + " :" + e.status().toString());
+                    if (writePasscodeAttempts < 3)
+                    {
+                        writePasscode();
+                    }
+                    else
+                    {
+                        Console.i("write failed 3 times. giving up");
+                        connectingDevice.disconnect();
+                        connectingDevice = null;
+                        listener.connectFailed(e.status().toString());
+                    }
                 }
             }
         });
@@ -369,12 +384,12 @@ public class BluetoothService extends Service
         //send message to activity
         listener.passcodeDeclined();
 
-        Log.i("TAG", "passcode declined");
+        Console.i("passcode declined");
     }
 
     private void goodPasscodeResponse()
     {
-        Log.i("TAG", "passcode accepted");
+        Console.i("passcode accepted");
 
         connectedDevice = connectingDevice;
         connectingDevice = null;
@@ -399,6 +414,7 @@ public class BluetoothService extends Service
 
     private void setAlarm()
     {
+        exceptionManager.startAlarm();
         AlarmManager am = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlarmReceiver.class);
         PendingIntent alarmIntent = PendingIntent.getActivity(this, 0, intent, 0);
@@ -412,7 +428,7 @@ public class BluetoothService extends Service
         {
             if (e.didEnter(BleDeviceState.INITIALIZED))
             {
-                Log.i("TAG", "initialized");
+                Console.i("initialized");
 
                 if (e.device().is(BleDeviceState.BONDED))
                     writePasscode();
@@ -424,7 +440,7 @@ public class BluetoothService extends Service
                         {
                             if(e.wasSuccess())
                             {
-                                Log.i("TAG", "bonded to " + e.device().getMacAddress());
+                                Console.i("bonded to " + e.device().getMacAddress());
                                 writePasscode();
                             }
                         }
@@ -433,7 +449,7 @@ public class BluetoothService extends Service
 
             if (e.didEnter(BleDeviceState.DISCONNECTED))
             {
-                Log.i("TAG", "disconnected");
+                Console.i("disconnected");
                 State.ChangeIntent state = e.device().getLastDisconnectIntent();
 
                 if(state == State.ChangeIntent.INTENTIONAL)
@@ -620,7 +636,7 @@ public class BluetoothService extends Service
 
                 if (deviceManager.hasDevice())
                 {
-                    Log.e("TAG", "saving data");
+                    Console.d("saving data");
                     dataSource.storeDataString();
                 }
 
@@ -662,7 +678,7 @@ public class BluetoothService extends Service
                 {
                     if (deviceManager.hasDevice())
                     {
-                        Log.i("TAG", "Connection lost due to not receiving updates to characteristic");
+                        Console.i("Connection lost due to not receiving updates to characteristic");
                         deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
                     }
                 }
@@ -680,7 +696,7 @@ public class BluetoothService extends Service
                     {
                         if (deviceManager.device() != null)
                         {
-                            Log.i("TAG", "connection lost for more than 10 seconds");
+                            Console.i("connection lost for more than 10 seconds");
                             deviceManager.device().exceptions().addException(DeviceExceptions.Exception.CONNECTION_LOST);
 
                             //reset connection lost time

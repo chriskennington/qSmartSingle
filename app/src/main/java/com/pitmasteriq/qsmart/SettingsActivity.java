@@ -11,7 +11,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -126,7 +125,7 @@ public class SettingsActivity extends PreferenceActivity
 
     public void onExportDataClick(View v)
     {
-        Log.e("TAG", "exporting data");
+        Console.d("Export: exporting data");
         //startActivity(new Intent(this, ExportDataActivity.class));
         startActivity(new Intent(this, SimpleExportActivity.class));
     }

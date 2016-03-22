@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -54,14 +53,14 @@ public class AlarmReceiver extends Activity
         super.onStart();
         active = true;
 
-        handler.postDelayed(new Runnable()
+        /*handler.postDelayed(new Runnable()
         {
             @Override
             public void run()
             {
                 em.startAlarm();
             }
-        }, 500);
+        }, 500);*/
 
 
         handler.postDelayed(stopAlarm, BluetoothService.ALARM_WAIT_TIME);
@@ -107,8 +106,7 @@ public class AlarmReceiver extends Activity
                 }
             }
         }
-        catch (NullPointerException e){Log.e("tag", "Could not add exceptions due to null pointer");}
-        catch (NullDeviceException e){Log.e("tag", "Could not add exceptions due to null device");}
+        catch (NullDeviceException e){Console.e("Could not add exceptions due to null device");}
     }
 
     public void close(View v)

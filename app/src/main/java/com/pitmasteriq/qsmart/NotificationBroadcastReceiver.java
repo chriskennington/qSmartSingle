@@ -3,7 +3,6 @@ package com.pitmasteriq.qsmart;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 public class NotificationBroadcastReceiver extends BroadcastReceiver
 {
@@ -17,7 +16,7 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver
 	{
 		final String action = intent.getAction();
 
-		Log.e(TAG, "*** Notification canceled ***");
+		Console.e("*** Notification canceled ***");
 
 		ExceptionManager.get(context.getApplicationContext()).cancelNotification(ExceptionManager.ALARM);
 

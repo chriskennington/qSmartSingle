@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -131,7 +130,7 @@ public class ParameterEditorDialog extends DialogFragment
         {
             int tempValue = Integer.parseInt(result);
 
-            Log.e("TAG", "entered value " + tempValue);
+            Console.d("entered value " + tempValue);
 
             if (!fahrenheit)
             {
@@ -141,7 +140,7 @@ public class ParameterEditorDialog extends DialogFragment
                     tempValue = c2fa(tempValue);
             }
 
-            Log.e("TAG", "converted value " + tempValue);
+            Console.d("converted value " + tempValue);
 
             switch(selector)
             {
@@ -165,11 +164,11 @@ public class ParameterEditorDialog extends DialogFragment
                 case DeviceConfig.CONFIG_FOOD_2_ALARM:
                 case DeviceConfig.CONFIG_FOOD_1_TEMP:
                 case DeviceConfig.CONFIG_FOOD_2_TEMP:
-                    if( (tempValue < 100 || tempValue > 250) && tempValue != 0 )
+                    if( (tempValue < 50 || tempValue > 250) && tempValue != 0 )
                     {
                         if (fahrenheit)
                         {
-                            intent.putExtra("min", 100);
+                            intent.putExtra("min", 50);
                             intent.putExtra("max", 250);
                         }
                         else
@@ -182,6 +181,7 @@ public class ParameterEditorDialog extends DialogFragment
                     break;
 
                 case DeviceConfig.CONFIG_PIT_ALARM:
+                    //if (((fahrenheit && (tempValue < 20 || tempValue > 100)) || (!fahrenheit && (tempValue < 20 || tempValue > 101))) && tempValue != 0)
                     if( (tempValue < 20 || tempValue > 100) && tempValue != 0 )
                     {
                         if (fahrenheit)
