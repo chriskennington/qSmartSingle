@@ -63,7 +63,7 @@ public class AlarmReceiver extends Activity
         }, 500);*/
 
 
-        handler.postDelayed(stopAlarm, BluetoothService.ALARM_WAIT_TIME);
+        handler.postDelayed(stopAlarm, BluetoothService1.ALARM_WAIT_TIME);
     }
 
 

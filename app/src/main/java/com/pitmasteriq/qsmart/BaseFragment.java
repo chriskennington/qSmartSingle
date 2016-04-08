@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.idevicesinc.sweetblue.BleManager;
+import com.pitmasteriq.qsmart.exception.*;
+import com.pitmasteriq.qsmart.exception.Exception;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -84,9 +86,11 @@ public class BaseFragment extends Fragment
         }
     }
 
-    protected void updateStatusIcon(ImageView v, int blinkRate)
+    protected void updateStatusIcon(ImageView v)
     {
         Device d = null;
+        ConnectionHandler connectionHandler = ConnectionHandler.get();
+        ExceptionHelper exceptionHelper = ExceptionHelper.get();
 
         try
         {
@@ -94,36 +98,22 @@ public class BaseFragment extends Fragment
         }
         catch (NullDeviceException e){}
 
-        if (d != null)
+        if (connectionHandler.getDevice() != null)
         {
-            switch (d.getStatus())
-            {
-                case Device.Status.OK:
-                    v.setImageResource(R.drawable.status_icon_green);
-                    break;
-                case Device.Status.NoData:
-                    v.setImageResource(R.drawable.status_icon_yellow);
-                    break;
-                case Device.Status.Disconnected:
-                    v.setImageResource(R.drawable.status_icon_gray);
-                    break;
-                case Device.Status.LostConnection:
-                case Device.Status.Unknown:
-                    v.setImageResource(R.drawable.status_icon_red);
-                    break;
-            }
+            if (connectionHandler.isConnected())
+                v.setImageResource(R.drawable.status_icon_green);
+            else if (connectionHandler.getState() == ConnectionHandler.STATE_UNINTENTIONAL_DISCONNECT)
+                v.setImageResource(R.drawable.status_icon_red);
+            else
+                v.setImageResource(R.drawable.status_icon_gray);
 
-            if(d.exceptions().hasException())
+            if (exceptionHelper.hasActiveExceptions())
             {
-                if( blinkRate > 0 )
-                    v.setAnimation(Animations.getBlinkAnimation(blinkRate));
+                v.setAnimation(Animations.getBlinkAnimation(Exception.DEFAULT_BLINK_RATE));
             }
-            else if (d.exceptions().hasSilenced())
+            else if (exceptionHelper.hasSilencedExceptions())
             {
-                if (blinkRate == 0)
-                    blinkRate = 750;
-
-                v.setAnimation(Animations.getPulseAnimation(blinkRate));
+                v.setAnimation(Animations.getPulseAnimation(750));
             }
             else
             {
@@ -131,7 +121,6 @@ public class BaseFragment extends Fragment
             }
         }
         else
-            //device is null
             v.setImageResource(R.drawable.status_icon_gray);
     }
 }

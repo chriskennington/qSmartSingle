@@ -8,17 +8,16 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
-import android.content.ComponentName;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -29,13 +28,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.idevicesinc.sweetblue.BleManager;
-import com.idevicesinc.sweetblue.BleManagerConfig;
-import com.idevicesinc.sweetblue.utils.Interval;
+import com.pitmasteriq.qsmart.service.BluetoothService;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.UUID;
 
 public class BaseActivity extends Activity implements FragmentResponseListener, ParameterEditedListener
@@ -55,7 +51,6 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     protected TextView actionBarTitle;
 
     private BluetoothService service;
-    private boolean serviceBound = false;
     private BleManager bleManager;
     private static final UUID[] WHITELIST = new UUID[]{Uuid.SERVICE, Uuid.CONFIG_BASIC, Uuid.STATUS_BASIC, Uuid.PASSCODE};
 
@@ -67,6 +62,7 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     private boolean shuttingDown = false;
 
 
+    private MyBroadcastReceiver broadcastReceiver = new MyBroadcastReceiver();
     private DeviceManager deviceManager;
 
 
@@ -77,6 +73,20 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
         super.onCreate(savedInstanceState);
         showCustomActionBar();
         setContentView(R.layout.activity_base);
+
+        /*
+        create intent filter for bluetooth service broadcasts and register receiver with
+        that intent
+         */
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothService.DISCONNECTED_SUCCESSFULLY);
+        filter.addAction(BluetoothService.PASSCODE_NULL);
+        filter.addAction(BluetoothService.PASSCODE_ACCEPTED);
+        filter.addAction(BluetoothService.PASSCODE_DECLINED);
+        filter.addAction(BluetoothService.CONFIG_CHANGE_BAD);
+        filter.addAction(BluetoothService.CONFIG_CHANGE_GOOD);
+        registerReceiver(broadcastReceiver, filter);
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
@@ -89,16 +99,16 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
         prefs = getSharedPreferences(Preferences.PREFERENCES, Context.MODE_PRIVATE);
         editor = prefs.edit();
 
-        BleManagerConfig config = new BleManagerConfig()
+        /*BleManagerConfig config = new BleManagerConfig()
         {{
                 this.defaultScanFilter = new BleManagerConfig.DefaultScanFilter(Uuid.SERVICE);
                 this.autoScanTime = Interval.millis(1000);
                 this.autoScanInterval = Interval.millis(2000);
                 this.autoScanIntervalWhileAppIsPaused = Interval.millis(5000);
                 this.defaultScanFilter = new BleManagerConfig.DefaultScanFilter(new HashSet<UUID>(Arrays.asList(WHITELIST)));
-            }};
+            }};*/
 
-        bleManager = BleManager.get(getApplicationContext(), config);
+        bleManager = BleManager.get(getApplicationContext());
         deviceManager = DeviceManager.get(getApplicationContext());
 
         checkForFirstLaunch();
@@ -150,20 +160,13 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     {
         super.onStart();
 
-        Intent intent = new Intent(this, BluetoothService.class);
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        Intent intent = new Intent(this, BluetoothService1.class);
     }
 
     @Override
     protected void onStop()
     {
         super.onStop();
-
-        if(serviceBound)
-        {
-            unbindService(serviceConnection);
-            serviceBound = false;
-        }
 
         deviceManager.saveDevice();
 
@@ -201,9 +204,7 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     {
         super.onDestroy();
         Console.e("On destroy called");
-        //TODO May cause bugs
-        service.disconnectFromDevice();
-        stopService(new Intent(this, BluetoothService.class));
+        unregisterReceiver(broadcastReceiver);
     }
 
     @Override
@@ -211,11 +212,13 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
     {
         switch (e.type())
         {
-            case FragmentResponseEvent.CONNECT_TO_ADDRESS:
+            case CONNECTION:
                 showLoadingDialog();
-                service.connectToAddress(e.stringData());
+                Intent i = new Intent(BluetoothService.ACTION_CONNECT);
+                i.putExtra("address", e.stringData());
+                sendBroadcast(i);
                 break;
-            case FragmentResponseEvent.APPLICATION_CLOSE:
+            case CLOSE:
                 shutdownApp();
                 break;
         }
@@ -229,7 +232,10 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
             int selector = e.data().getIntExtra("selector", -1);
             int value = e.data().getIntExtra("value", -1);
 
-            service.updateConfigurationValue(selector, value);
+            Intent i = new Intent(BluetoothService.ACTION_CONFIG_CHANGE);
+            i.putExtra("selector", selector);
+            i.putExtra("value", value);
+            sendBroadcast(i);
         }
         else
         {
@@ -245,12 +251,22 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
         }
     }
 
+    private void sendBroadcast(String action)
+    {
+        final Intent intent = new Intent(action);
+        sendBroadcast(intent);
+    }
+
     private void shutdownApp()
     {
         shuttingDown = true;
-        service.disconnectFromDevice();
-        stopService(new Intent(this, BluetoothService.class));
-        finish();
+        if (ConnectionHandler.get().isConnected())
+            sendBroadcast(BluetoothService.ACTION_DISCONNECT);
+        else
+        {
+            stopService(new Intent(getApplicationContext(), BluetoothService.class));
+            finish();
+        }
     }
 
     private void showCustomActionBar()
@@ -297,26 +313,64 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
         return false;
     }
 
-    private ServiceConnection serviceConnection = new ServiceConnection()
+    private class MyBroadcastReceiver extends BroadcastReceiver
     {
         @Override
-        public void onServiceConnected(ComponentName name, IBinder s)
+        public void onReceive(Context context, Intent intent)
         {
-            service = ((BluetoothService.BluetoothBinder)s).getService();
-            service.setServiceListener(serviceListener);
-            serviceBound = true;
+            String action = intent.getAction();
+            if (action.equals(BluetoothService.DISCONNECTED_SUCCESSFULLY))
+            {
+                if (shuttingDown)
+                {
+                    stopService(new Intent(getApplicationContext(), BluetoothService.class));
+                    finish();
+                }
+            }
 
-            bleManager.setListener_Discovery(service.discoveryListener);
+            if (action.equals(BluetoothService.PASSCODE_ACCEPTED))
+            {
+                hideLoadingDialog();
+                Toast.makeText(getApplicationContext(),"Device Connected", Toast.LENGTH_SHORT).show();
+            }
+
+            if (action.equals(BluetoothService.PASSCODE_DECLINED))
+            {
+                hideLoadingDialog();
+
+                MessageDialog md = MessageDialog.newInstance("Failed", "Device could not be connected to. This could be due to an incorrect passcode. The passcode can not be '0000'.");
+                md.show(getFragmentManager(), "dialog");
+            }
+
+            if (action.equals(BluetoothService.PASSCODE_NULL))
+            {
+                hideLoadingDialog();
+
+                MessageDialog md = MessageDialog.newInstance("Failed", "Please set your passcode. It can not be '0000'.");
+                md.show(getFragmentManager(), "dialog");
+            }
+
+            if (action.equals(BluetoothService.CONFIG_CHANGE_GOOD))
+            {
+                try
+                {
+                    AssetFileDescriptor afd = getApplicationContext().getAssets().openFd("audio" + File.separator + "config_edit_success.mp3");
+                    MediaPlayer player = new MediaPlayer();
+                    player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+                    player.prepare();
+                    player.start();
+                }
+                catch(IOException e){e.printStackTrace();}
+            }
+
+            if (action.equals(BluetoothService.CONFIG_CHANGE_BAD))
+            {
+                Toast.makeText(getApplicationContext(),"Failed to change value", Toast.LENGTH_SHORT).show();
+            }
         }
+    }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name)
-        {
-            serviceBound = false;
-        }
-    };
-
-    private BluetoothService.ServiceListener serviceListener = new BluetoothService.ServiceListener()
+    private BluetoothService1.ServiceListener serviceListener = new BluetoothService1.ServiceListener()
     {
         @Override
         public void connectFailed(String reason)
@@ -588,7 +642,7 @@ public class BaseActivity extends Activity implements FragmentResponseListener, 
             @Override
             public void onCancel(DialogInterface dialog)
             {
-                service.cancelConnectionAttempt();
+                sendBroadcast(BluetoothService.ACTION_CANCEL_CONNECTION);
             }
         });
         pd.show();

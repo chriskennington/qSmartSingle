@@ -15,9 +15,11 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.pitmasteriq.qsmart.exception.Exception;
+import com.pitmasteriq.qsmart.exception.ExceptionHelper;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -28,14 +30,13 @@ public class ExceptionFragment extends DialogFragment
 {
 
     private DeviceManager deviceManager;
+    private ExceptionHelper eHelper = ExceptionHelper.get();
 
     private Dialog dialog;
-
     private List<CheckBox> checkboxes = new ArrayList<>();
-
     private Context context;
 
-    private Map<CheckBox, DeviceExceptions.Exception> map   = new HashMap<>();
+    private Map<CheckBox, Exception> map   = new HashMap<>();
 
 
     @Override
@@ -63,7 +64,6 @@ public class ExceptionFragment extends DialogFragment
         Button cancel = (Button) v.findViewById(R.id.error_cancel);
         Button ok = (Button) v.findViewById(R.id.error_ok);
 
-
         try
         {
             title.setText(deviceManager.device().getDefinedName() + " Exceptions");
@@ -80,74 +80,65 @@ public class ExceptionFragment extends DialogFragment
     }
 
 
-
-
     private void addExceptions(LinearLayout layout)
     {
-        try
+        ArrayList<Exception> exceptions = eHelper.getActiveExceptions();
+
+        if (exceptions.size() > 0)
         {
-            HashSet<DeviceExceptions.Exception> exceptions = deviceManager.device().exceptions().get();
-
-            if (exceptions.size() > 0)
+            for (Exception e : exceptions)
             {
-                for (DeviceExceptions.Exception e : exceptions)
-                {
-                    Console.i("ADD FLAG: ADDING FLAG TO FRAGMENT");
-                    CheckBox temp = new CheckBox(context);
-                    temp.setText(e.name().replace("_", " "));
-                    checkboxes.add(temp);
-                    temp.setTextColor(Color.WHITE);
-                    map.put(temp, e);
-
-                    layout.addView(temp);
-                }
-            } else
-            {
-                TextView temp = new TextView(context);
-                temp.setText(R.string.no_exceptions_found);
+                Console.i("ADD FLAG: ADDING FLAG TO FRAGMENT");
+                CheckBox temp = new CheckBox(context);
+                temp.setText(e.getName());
+                checkboxes.add(temp);
                 temp.setTextColor(Color.WHITE);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-                lp.topMargin = 25;
-                lp.bottomMargin = 25;
-                temp.setLayoutParams(lp);
-                temp.setGravity(Gravity.CENTER_HORIZONTAL);
+                map.put(temp, e);
+
                 layout.addView(temp);
             }
         }
-        catch(NullDeviceException e){e.printStackTrace();}
+        else
+        {
+            TextView temp = new TextView(context);
+            temp.setText(R.string.no_exceptions_found);
+            temp.setTextColor(Color.WHITE);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.topMargin = 25;
+            lp.bottomMargin = 25;
+            temp.setLayoutParams(lp);
+            temp.setGravity(Gravity.CENTER_HORIZONTAL);
+            layout.addView(temp);
+        }
     }
 
     private void addSilencedExceptions(LinearLayout layout)
     {
-        try
-        {
-            HashSet<DeviceExceptions.Exception> exceptions = deviceManager.device().exceptions().silenced();
+        ArrayList<Exception> exceptions = eHelper.getSilencedExceptions();
 
-            if (exceptions.size() > 0)
-            {
-                for (DeviceExceptions.Exception e : exceptions)
-                {
-                    TextView temp = new TextView(context);
-                    temp.setText(e.name().replace("_", " "));
-                    temp.setTextColor(Color.WHITE);
-                    layout.addView(temp);
-                }
-            } else
+        if (exceptions.size() > 0)
+        {
+            for (Exception e : exceptions)
             {
                 TextView temp = new TextView(context);
-                temp.setText(R.string.no_silenced_exceptions);
+                temp.setText(e.getName());
                 temp.setTextColor(Color.WHITE);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-                lp.topMargin = 25;
-                lp.bottomMargin = 25;
-                temp.setLayoutParams(lp);
-                temp.setGravity(Gravity.CENTER_HORIZONTAL);
                 layout.addView(temp);
             }
+        } else
+        {
+            TextView temp = new TextView(context);
+            temp.setText(R.string.no_silenced_exceptions);
+            temp.setTextColor(Color.WHITE);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.topMargin = 25;
+            lp.bottomMargin = 25;
+            temp.setLayoutParams(lp);
+            temp.setGravity(Gravity.CENTER_HORIZONTAL);
+            layout.addView(temp);
         }
-        catch(NullDeviceException e){e.printStackTrace();}
     }
 
     private View.OnClickListener cancelListener = new View.OnClickListener()
@@ -168,11 +159,7 @@ public class ExceptionFragment extends DialogFragment
             {
                 if(cb.isChecked())
                 {
-                    try
-                    {
-                        deviceManager.device().exceptions().silenceException(map.get(cb));
-                    }
-                    catch(NullDeviceException e){e.printStackTrace();}
+                    eHelper.silenceException(map.get(cb).getId());
                 }
             }
             dialog.dismiss();

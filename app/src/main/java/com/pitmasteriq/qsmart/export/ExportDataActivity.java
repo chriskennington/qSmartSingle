@@ -17,8 +17,8 @@ import android.widget.CheckBox;
 import android.widget.Toast;
 
 import com.pitmasteriq.qsmart.Console;
-import com.pitmasteriq.qsmart.DataModel;
-import com.pitmasteriq.qsmart.DataSource;
+import com.pitmasteriq.qsmart.database.DataModel;
+import com.pitmasteriq.qsmart.database.DataSource;
 import com.pitmasteriq.qsmart.DatePickedListener;
 import com.pitmasteriq.qsmart.MessageDialog;
 import com.pitmasteriq.qsmart.MyApplication;

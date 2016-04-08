@@ -64,7 +64,15 @@
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_export_data">Export Data</string>
 
-<!-- TODO: Remove or change this placeholder text -->
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="display_error">ERR</string>
+    <string name="enclosure_hot">Enclosure Hot</string>
+    <string name="food_1_done_msg">Food 1 Done</string>
+    <string name="food_2_done_msg">Food 2 Done</string>
+    <string name="connection_lost_msg">Connection Lost</string>
+    <string name="device_name_label">Device Name</string>
+    <string name="food1_probe_name">Food 1 Temp</string>
+    <string name="food2_probe_name">Food 2 Temp</string>
 
 </resources>

@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.idevicesinc.sweetblue.BleManager;
 import com.idevicesinc.sweetblue.BleManagerState;
+import com.pitmasteriq.qsmart.service.BluetoothService;
 
 //TODO 's
 
@@ -85,11 +86,11 @@ public class MainActivity extends Activity
         }
         else
         {
-            //TODO start service
-            if(startService(new Intent(this, BluetoothService.class)) != null)
+            Intent serviceIntent = new Intent(getApplicationContext(), BluetoothService.class);
+            if(startService(serviceIntent) != null)
             {
-                //startActivity(new Intent(this, StandardMonitorActivity.class));
-                startActivity(new Intent(this, BaseActivity.class));
+                Intent activityIntent = new Intent(this, BaseActivity.class);
+                startActivity(activityIntent);
                 finish();
             }
         }

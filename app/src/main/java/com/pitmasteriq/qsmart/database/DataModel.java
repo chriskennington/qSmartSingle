@@ -1,4 +1,4 @@
-package com.pitmasteriq.qsmart;
+package com.pitmasteriq.qsmart.database;
 
 /**
  * Created by Chris on 11/2/2015.

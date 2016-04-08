@@ -77,7 +77,7 @@ public class InfoFragment extends DialogFragment
             @Override
             public void onClick(View v)
             {
-                listener.onFragmentResponse(new FragmentResponseEvent(FragmentResponseEvent.APPLICATION_CLOSE));
+                listener.onFragmentResponse(new FragmentResponseEvent(FragmentResponseEvent.Type.CLOSE));
                 dialog.dismiss();
             }
         });

@@ -7,10 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.idevicesinc.sweetblue.BleDevice;
+import com.pitmasteriq.qsmart.exception.ExceptionHelper;
 
 
 /**
@@ -22,7 +22,6 @@ public class StandardFragment extends BaseFragment
     //*** UI COMPONENTS ***
     private TextView deviceName, food1Name, food2Name, pitSet, pitTemp, food1Temp, food2Temp, debug;
     private ImageView statusIcon;
-    private RelativeLayout pitSetClickLoc, food1ClickLoc, food2ClickLoc;
     //*********************
 
     private static StandardFragment instance;
@@ -54,10 +53,6 @@ public class StandardFragment extends BaseFragment
         debug = (TextView)v.findViewById(R.id.standard_debug);
         statusIcon = (ImageView)v.findViewById(R.id.standard_status_icon);
 
-        food1ClickLoc = (RelativeLayout)v.findViewById(R.id.standard_food_1_click_loc);
-        food2ClickLoc = (RelativeLayout)v.findViewById(R.id.standard_food_2_click_loc);
-        pitSetClickLoc = (RelativeLayout)v.findViewById(R.id.standard_pit_set_click_loc);
-
         pitSet.setTypeface(seg7Font);
         pitTemp.setTypeface(seg7Font);
         food1Temp.setTypeface(seg7Font);
@@ -81,10 +76,7 @@ public class StandardFragment extends BaseFragment
     @Override
     protected void updateInterface()
     {
-        int blinkRate = 0;
-
         Device d = null;
-
         try
         {
            d = deviceManager.device();
@@ -102,14 +94,12 @@ public class StandardFragment extends BaseFragment
             food1Name.setText(d.food1Probe().getName());
             food2Name.setText(d.food2Probe().getName());
 
-
-
             pitSet.setText(String.valueOf(d.config().pitSet().get()));
 
             if(d.pitProbe().temperature().getRawTemp() != 999)
                 pitTemp.setText(String.valueOf(d.pitProbe().temperature().get()));
             else
-                pitTemp.setText("ERR");
+                pitTemp.setText(R.string.display_error);
 
             if(d.food1Probe().temperature().getRawTemp() != 999)
                 food1Temp.setText(String.valueOf(d.food1Probe().temperature().get()));
@@ -133,69 +123,48 @@ public class StandardFragment extends BaseFragment
                 debug.setText("");
             }
 
+            ExceptionHelper eHelper = ExceptionHelper.get();
 
-
-            if (d.exceptions().hasException())
+            if (eHelper.hasActiveExceptions())
             {
-                for(DeviceExceptions.Exception e : d.exceptions().get())
+                for(com.pitmasteriq.qsmart.exception.Exception e : eHelper.getActiveExceptions())
                 {
-                    switch(e)
+                    switch(e.getId())
                     {
-                        case ENCLOSURE_HOT:
-                            deviceName.setText("ENCLOSURE HOT");
+                        case 0:
+                            deviceName.setText(R.string.enclosure_hot);
                             deviceName.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case FOOD_1_PROBE_ERROR:
-                            food1Temp.setText("ERR");
+                        case 1:
+                            food1Temp.setText(R.string.display_error);
                             food1Temp.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case FOOD_2_PROBE_ERROR:
-                            food2Temp.setText("ERR");
+                        case 2:
+                            food2Temp.setText(R.string.display_error);
                             food2Temp.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case FOOD_1_DONE:
+                        case 3:
                             food1Temp.setAnimation(Animations.getBlinkAnimation());
-                            deviceName.setText("Food 1 Done");
+                            deviceName.setText(R.string.food_1_done_msg);
                             deviceName.setAnimation(Animations.getPulseAnimation(1000));
-                            blinkRate = 250;
                             break;
-                        case FOOD_2_DONE:
+                        case 4:
                             food2Temp.setAnimation(Animations.getBlinkAnimation());
-                            deviceName.setText("Food 1 Done");
+                            deviceName.setText(R.string.food_2_done_msg);
                             deviceName.setAnimation(Animations.getPulseAnimation(1000));
-                            blinkRate = 250;
                             break;
-                        case PIT_HOT:
+                        case 5:
                             pitTemp.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case PIT_COLD:
+                        case 6:
                             pitTemp.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case LID_OFF:
-                            blinkRate = 250;
-                            break;
-                        case DELAY_PIT_SET:
-                            blinkRate = 250;
-                            break;
-                        case FOOD_1_TEMP_PIT_SET:
-                            blinkRate = 250;
-                            break;
-                        case FOOD_2_TEMP_PIT_SET:
-                            blinkRate = 250;
-                            break;
-                        case PIT_PROBE_ERROR:
-                            pitTemp.setText("ERR");
+                        case 11: //pit probe error
+                            pitTemp.setText(R.string.display_error);
                             pitTemp.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case CONNECTION_LOST:
-                            deviceName.setText("CONNECTION LOST");
-                            blinkRate = 500;
+                        case 14: //connection lost
+                            deviceName.setText(R.string.connection_lost_msg);
                             break;
                     }
                 }
@@ -203,16 +172,16 @@ public class StandardFragment extends BaseFragment
         }
         else
         {
-            deviceName.setText("Device Name");
-            pitSet.setText("---");
-            pitTemp.setText("---");
-            food1Temp.setText("---");
-            food2Temp.setText("---");
+            deviceName.setText(R.string.device_name_label);
+            pitSet.setText(R.string.default_novalue);
+            pitTemp.setText(R.string.default_novalue);
+            food1Temp.setText(R.string.default_novalue);
+            food2Temp.setText(R.string.default_novalue);
 
-            food1Name.setText("Food 1");
-            food2Name.setText("Food 2");
+            food1Name.setText(R.string.food1_probe_name);
+            food2Name.setText(R.string.food2_probe_name);
         }
 
-        updateStatusIcon(statusIcon, blinkRate);
+        updateStatusIcon(statusIcon);
     }
 }

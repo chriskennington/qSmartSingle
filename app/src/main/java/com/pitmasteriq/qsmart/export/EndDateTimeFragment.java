@@ -11,8 +11,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.pitmasteriq.qsmart.DataModel;
-import com.pitmasteriq.qsmart.DataSource;
+import com.pitmasteriq.qsmart.database.DataModel;
+import com.pitmasteriq.qsmart.database.DataSource;
 import com.pitmasteriq.qsmart.DatePickerFragment;
 import com.pitmasteriq.qsmart.R;
 

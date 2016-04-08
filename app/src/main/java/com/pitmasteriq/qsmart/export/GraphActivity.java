@@ -9,8 +9,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.pitmasteriq.qsmart.Console;
-import com.pitmasteriq.qsmart.DataModel;
-import com.pitmasteriq.qsmart.DataSource;
+import com.pitmasteriq.qsmart.database.DataModel;
+import com.pitmasteriq.qsmart.database.DataSource;
 import com.pitmasteriq.qsmart.Preferences;
 import com.pitmasteriq.qsmart.R;
 import com.pitmasteriq.qsmart.Temperature;

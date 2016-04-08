@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.pitmasteriq.qsmart" >
+<manifest package="com.pitmasteriq.qsmart"
+          xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-sdk
         android:minSdkVersion="18"
-        android:targetSdkVersion="21" />
+        android:targetSdkVersion="21"/>
 
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
-        android:required="true" />
+        android:required="true"/>
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <!-- android:name=".MyApplication" -->
     <application
@@ -27,56 +27,63 @@
         android:configChanges="keyboardHidden|orientation|screenSize|screenLayout"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
-        <activity android:name=".MainActivity" >
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
         <service
-            android:name=".BluetoothService"
+            android:name=".BluetoothService1"
             android:enabled="true"
-            android:exported="false" >
+            android:exported="false">
         </service>
 
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".BaseActivity" >
+            android:parentActivityName=".BaseActivity">
         </activity>
 
         <receiver
             android:name=".NotificationBroadcastReceiver"
             android:enabled="true"
-            android:exported="false" >
+            android:exported="false">
             <intent-filter>
-                <action android:name="notification_canceled" />
+                <action android:name="notification_canceled"/>
             </intent-filter>
         </receiver>
 
         <activity
             android:name=".BaseActivity"
-            android:label="@string/title_activity_base" >
+            android:label="@string/title_activity_base">
         </activity>
-        <activity android:name=".AlarmReceiver" >
+        <activity android:name=".AlarmReceiver">
         </activity>
         <activity
             android:name=".export.ExportDataActivity"
             android:label="@string/title_activity_export_data"
             android:parentActivityName=".BaseActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppThemeCompat" >
+            android:theme="@style/AppThemeCompat">
         </activity>
         <activity
             android:name=".export.GraphActivity"
-            android:screenOrientation="landscape" >
+            android:screenOrientation="landscape">
         </activity>
-        <activity android:name=".export.SimpleExportActivity"
-                  android:parentActivityName=".SettingsActivity">
+        <activity
+            android:name=".export.SimpleExportActivity"
+            android:parentActivityName=".SettingsActivity">
         </activity>
+
+        <service
+            android:name=".service.BluetoothService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

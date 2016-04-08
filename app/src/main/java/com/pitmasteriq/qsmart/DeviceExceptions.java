@@ -16,8 +16,7 @@ public class DeviceExceptions
     {
         ENCLOSURE_HOT               (0, 1, ExceptionType.ALARM),
         PIT_PROBE_ERROR             (11, 2048, ExceptionType.ALARM),
-        FOOD_1_PROBE_ERROR          (1
-                , 2, ExceptionType.ALARM),
+        FOOD_1_PROBE_ERROR          (1 , 2, ExceptionType.ALARM),
         FOOD_2_PROBE_ERROR          (2, 4, ExceptionType.ALARM),
         FOOD_1_DONE                 (3, 8, ExceptionType.ALARM),
         FOOD_2_DONE                 (4, 16, ExceptionType.ALARM),

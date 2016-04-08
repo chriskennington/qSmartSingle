@@ -92,7 +92,7 @@ public class ExceptionManager
                 mp.release();
                 //set the value in preferences to true
                 context.getSharedPreferences(Preferences.PREFERENCES, 0).edit().putBoolean(Preferences.ALARM_SOUNDING, false)
-                        .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + BluetoothService.ALARM_WAIT_TIME).commit();
+                        .putLong(Preferences.ALARM_NEXT_TIME,System.currentTimeMillis() + BluetoothService1.ALARM_WAIT_TIME).commit();
 
                 alarmSounding = false;
                 return true;

@@ -1,10 +1,16 @@
-package com.pitmasteriq.qsmart;
+package com.pitmasteriq.qsmart.database;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.pitmasteriq.qsmart.Console;
+import com.pitmasteriq.qsmart.Device;
+import com.pitmasteriq.qsmart.DeviceManager;
+import com.pitmasteriq.qsmart.MyApplication;
+import com.pitmasteriq.qsmart.NullDeviceException;
 
 import java.util.ArrayList;
 import java.util.List;

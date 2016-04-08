@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.pitmasteriq.qsmart.notifications.NotificationHelper;
+
 public class NotificationBroadcastReceiver extends BroadcastReceiver
 {
 	private static final String TAG = "Notification Receiver";
@@ -17,8 +19,6 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver
 		final String action = intent.getAction();
 
 		Console.e("*** Notification canceled ***");
-
-		ExceptionManager.get(context.getApplicationContext()).cancelNotification(ExceptionManager.ALARM);
-
+		NotificationHelper.clearNotification(NotificationHelper.EXCEPTION_NOTIFICATION);
 	}
 }

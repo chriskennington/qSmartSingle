@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
-import com.pitmasteriq.qsmart.DataModel;
-import com.pitmasteriq.qsmart.DataSource;
+import com.pitmasteriq.qsmart.database.DataModel;
+import com.pitmasteriq.qsmart.database.DataSource;
 import com.pitmasteriq.qsmart.R;
 
 import java.util.ArrayList;

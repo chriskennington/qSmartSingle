@@ -5,25 +5,30 @@ package com.pitmasteriq.qsmart;
  */
 public class FragmentResponseEvent
 {
+    enum Type
+    {
+        CONNECTION, CLOSE
+    }
+
     public static final int CONNECT_TO_ADDRESS = 1;
     public static final int APPLICATION_CLOSE = 2;
 
-    private int type = 0;
+    private Type type;
     private String stringData = "";
 
 
 
-    public FragmentResponseEvent(int type)
+    public FragmentResponseEvent(Type type)
     {
         this.type = type;
     }
 
-    public FragmentResponseEvent(int type, String data)
+    public FragmentResponseEvent(Type type, String data)
     {
         this.type = type;
         this.stringData = data;
     }
 
-    public int type(){return type;}
+    public Type type(){return type;}
     public String stringData(){return stringData;}
 }

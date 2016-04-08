@@ -12,6 +12,8 @@ import android.widget.ScrollView;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.pitmasteriq.qsmart.exception.ExceptionHelper;
+
 import java.util.Formatter;
 
 
@@ -157,17 +159,17 @@ public class AdvancedFragment extends BaseFragment
             if(d.pitProbe().temperature().getRawTemp() != 999)
                 pitTemp.setText(String.valueOf(d.pitProbe().temperature().get()));
             else
-                pitTemp.setText("ERR");
+                pitTemp.setText(R.string.display_error);
 
             if(d.food1Probe().temperature().getRawTemp() != 999)
                 food1Temp.setText(String.valueOf(d.food1Probe().temperature().get()));
             else
-                food1Temp.setText(getString(R.string.default_novalue));
+                food1Temp.setText(R.string.default_novalue);
 
             if(d.food2Probe().temperature().getRawTemp() != 999)
                 food2Temp.setText(String.valueOf(d.food2Probe().temperature().get()));
             else
-                food2Temp.setText(getString(R.string.default_novalue));
+                food2Temp.setText(R.string.default_novalue);
 
 
             if(d.config().pitAlarmDeviation().getRawTemp() > 0)
@@ -177,19 +179,19 @@ public class AdvancedFragment extends BaseFragment
             }
             else
             {
-                pitAlarmLow.setText(getString(R.string.default_novalue));
-                pitAlarmHigh.setText(getString(R.string.default_novalue));
+                pitAlarmLow.setText(R.string.default_novalue);
+                pitAlarmHigh.setText(R.string.default_novalue);
             }
 
             if(d.config().food1AlarmTemp().getRawTemp() > 0)
                 food1Alarm.setText(String.valueOf(d.config().food1AlarmTemp().get()));
             else
-                food1Alarm.setText(getString(R.string.default_novalue));
+                food1Alarm.setText(R.string.default_novalue);
 
             if(d.config().food2AlarmTemp().getRawTemp() > 0)
                 food2Alarm.setText(String.valueOf(d.config().food2AlarmTemp().get()));
             else
-                food2Alarm.setText(getString(R.string.default_novalue));
+                food2Alarm.setText(R.string.default_novalue);
 
 
             if(d.config().food1Temp().getRawTemp() > 0 || d.config().food1PitSet().getRawTemp() > 0)
@@ -199,8 +201,8 @@ public class AdvancedFragment extends BaseFragment
             }
             else
             {
-                food1PitSet.setText(getString(R.string.default_novalue));
-                atFood1Temp.setText(getString(R.string.default_novalue));
+                food1PitSet.setText(R.string.default_novalue);
+                atFood1Temp.setText(R.string.default_novalue);
             }
 
             if(d.config().food2Temp().getRawTemp() > 0 || d.config().food2PitSet().getRawTemp() > 0)
@@ -210,8 +212,8 @@ public class AdvancedFragment extends BaseFragment
             }
             else
             {
-                food2PitSet.setText(getString(R.string.default_novalue));
-                atFood2Temp.setText(getString(R.string.default_novalue));
+                food2PitSet.setText(R.string.default_novalue);
+                atFood2Temp.setText(R.string.default_novalue);
             }
 
             if(d.config().delayPitSet().getRawTemp() > 0 || d.config().getDelayTime() > 0)
@@ -238,102 +240,78 @@ public class AdvancedFragment extends BaseFragment
             }
             else
             {
-                delayTime.setText(getString(R.string.default_novalue));
-                delayPitSet.setText(getString(R.string.default_novalue));
+                delayTime.setText(R.string.default_novalue);
+                delayPitSet.setText(R.string.default_novalue);
             }
 
+            ExceptionHelper eHelper = ExceptionHelper.get();
 
-            if (d.exceptions().hasException())
+            if (eHelper.hasActiveExceptions())
             {
-                for(DeviceExceptions.Exception e : d.exceptions().get())
+                for(com.pitmasteriq.qsmart.exception.Exception e : eHelper.getActiveExceptions())
                 {
-                    switch(e)
+                    switch(e.getId())
                     {
-                        case ENCLOSURE_HOT:
-                            deviceName.setText("ENCLOSURE HOT");
+                        case 0:
+                            deviceName.setText(R.string.enclosure_hot);
                             deviceName.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case FOOD_1_PROBE_ERROR:
-                            food1Temp.setText("ERR");
+                        case 1:
+                            food1Temp.setText(R.string.display_error);
                             food1Temp.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case FOOD_2_PROBE_ERROR:
-                            food2Temp.setText("ERR");
+                        case 2:
+                            food2Temp.setText(R.string.display_error);
                             food2Temp.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case FOOD_1_DONE:
+                        case 3:
                             food1Temp.setAnimation(Animations.getBlinkAnimation());
-                            deviceName.setText("Food 1 Done");
+                            deviceName.setText(R.string.food_1_done_msg);
                             deviceName.setAnimation(Animations.getPulseAnimation(1000));
-                            blinkRate = 250;
                             break;
-                        case FOOD_2_DONE:
+                        case 4:
                             food2Temp.setAnimation(Animations.getBlinkAnimation());
-                            deviceName.setText("Food 2 Done");
+                            deviceName.setText(R.string.food_2_done_msg);
                             deviceName.setAnimation(Animations.getPulseAnimation(1000));
-                            blinkRate = 250;
                             break;
-                        case PIT_HOT:
+                        case 5:
                             pitTemp.setAnimation(Animations.getBlinkAnimation());
-                            pitAlarmHigh.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case PIT_COLD:
+                        case 6:
                             pitTemp.setAnimation(Animations.getBlinkAnimation());
-                            pitAlarmLow.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case LID_OFF:
-                            blinkRate = 250;
-                            break;
-                        case DELAY_PIT_SET:
-                            blinkRate = 250;
-                            break;
-                        case FOOD_1_TEMP_PIT_SET:
-                            blinkRate = 250;
-                            break;
-                        case FOOD_2_TEMP_PIT_SET:
-                            blinkRate = 250;
-                            break;
-                        case PIT_PROBE_ERROR:
-                            pitTemp.setText("ERR");
+                        case 11: //pit probe error
+                            pitTemp.setText(R.string.display_error);
                             pitTemp.setAnimation(Animations.getBlinkAnimation());
-                            blinkRate = 250;
                             break;
-                        case CONNECTION_LOST:
-                            deviceName.setText("CONNECTION LOST");
-                            blinkRate = 500;
+                        case 14: //connection lost
+                            deviceName.setText(R.string.connection_lost_msg);
                             break;
                     }
                 }
             }
-
-
         }
         else
         {
-            deviceName.setText("Device Name");
-            food1ProbeName.setText(getString(R.string.default_novalue));
-            food2ProbeName.setText(getString(R.string.default_novalue));
-            pitSet.setText(getString(R.string.default_novalue));
-            pitTemp.setText(getString(R.string.default_novalue));
-            food1Temp.setText(getString(R.string.default_novalue));
-            food2Temp.setText(getString(R.string.default_novalue));
-            pitAlarmLow.setText(getString(R.string.default_novalue));
-            pitAlarmHigh.setText(getString(R.string.default_novalue));
-            food1Alarm.setText(getString(R.string.default_novalue));
-            food2Alarm.setText(getString(R.string.default_novalue));
-            delayPitSet.setText(getString(R.string.default_novalue));
-            delayTime.setText(getString(R.string.default_novalue));
-            food1PitSet.setText(getString(R.string.default_novalue));
-            food2PitSet.setText(getString(R.string.default_novalue));
-            atFood1Temp.setText(getString(R.string.default_novalue));
-            atFood2Temp.setText(getString(R.string.default_novalue));
+            deviceName.setText(R.string.device_name_label);
+            food1ProbeName.setText(R.string.food1_probe_name);
+            food2ProbeName.setText(R.string.food2_probe_name);
+            pitSet.setText(R.string.default_novalue);
+            pitTemp.setText(R.string.default_novalue);
+            food1Temp.setText(R.string.default_novalue);
+            food2Temp.setText(R.string.default_novalue);
+            pitAlarmLow.setText(R.string.default_novalue);
+            pitAlarmHigh.setText(R.string.default_novalue);
+            food1Alarm.setText(R.string.default_novalue);
+            food2Alarm.setText(R.string.default_novalue);
+            delayPitSet.setText(R.string.default_novalue);
+            delayTime.setText(R.string.default_novalue);
+            food1PitSet.setText(R.string.default_novalue);
+            food2PitSet.setText(R.string.default_novalue);
+            atFood1Temp.setText(R.string.default_novalue);
+            atFood2Temp.setText(R.string.default_novalue);
         }
 
-        updateStatusIcon(statusIcon, blinkRate);
+        updateStatusIcon(statusIcon);
     }
 }

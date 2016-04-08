@@ -19,13 +19,14 @@ import com.idevicesinc.sweetblue.BleDeviceState;
 import com.idevicesinc.sweetblue.BleManager;
 import com.idevicesinc.sweetblue.utils.Interval;
 import com.idevicesinc.sweetblue.utils.State;
+import com.pitmasteriq.qsmart.database.DataSource;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BluetoothService extends Service
+public class BluetoothService1 extends Service
 {
     public static final int ALARM_WAIT_TIME = 60000;
 
@@ -57,7 +58,7 @@ public class BluetoothService extends Service
     private DataSource dataSource;
     private SaveDataThread saveThread;
 
-    public BluetoothService()
+    public BluetoothService1()
     {
     }
 
@@ -120,9 +121,9 @@ public class BluetoothService extends Service
 
     public class BluetoothBinder extends Binder
     {
-        public BluetoothService getService()
+        public BluetoothService1 getService()
         {
-            return BluetoothService.this;
+            return BluetoothService1.this;
         }
     }
 
@@ -514,6 +515,7 @@ public class BluetoothService extends Service
 
         @Override
         public void run()
+
         {
             short value = 0;
             List<Short> values = new ArrayList<>();
@@ -523,6 +525,7 @@ public class BluetoothService extends Service
 
             value = bytesToShort((byte) 0, data[2]);
             values.add((short) ((value == 0) ? 0 : value + TEMPERATURE_OFFSET));
+
 
             values.add(bytesToShort(data[3], data[4]));
             values.add(bytesToShort(data[5], data[6]));

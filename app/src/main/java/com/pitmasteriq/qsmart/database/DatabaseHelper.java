@@ -1,8 +1,10 @@
-package com.pitmasteriq.qsmart;
+package com.pitmasteriq.qsmart.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import com.pitmasteriq.qsmart.Console;
 
 /**
  * Created by Chris on 11/2/2015.
@@ -50,7 +52,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     {
         Console.w(DatabaseHelper.class.getName() + ": " +
                 "Upgrading database from version " + oldVersion + " to "
-                        + newVersion + ", which will destroy all old data");
+                + newVersion + ", which will destroy all old data");
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATA);
         onCreate(db);
     }

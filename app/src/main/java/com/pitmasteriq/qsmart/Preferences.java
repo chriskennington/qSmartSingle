@@ -7,6 +7,17 @@ public class Preferences
 {
     public static final String PREFERENCES = "com.pitmasteriq.qsmartsingle.preferences";
 
+    public static final String NOTIFICATION_ACTIVE = "notification_active";
+
+
+
+
+
+
+
+
+
+
     public static final String HAS_FOREGROUND = "has_foreground";
 
     public static final String FIRST_LAUNCH = "first_launch";
